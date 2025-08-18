@@ -143,4 +143,10 @@ plugins:
       sections:
         All documentation:
           - '*.md'
+  # PDF generation plugin (disabled by default in dev; enable by setting ENABLE_PDF_EXPORT=1)
+  - with-pdf:
+      output_path: pdf/n8n-docs.pdf
+      enabled_if_env: ENABLE_PDF_EXPORT
+      cover_title: n8n Docs
+      cover_logo: _images/n8n-docs-icon.svg
 INHERIT: ./nav.yml
