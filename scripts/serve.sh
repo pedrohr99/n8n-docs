@@ -20,7 +20,7 @@ if [ ! -f "$CONFIG" ]; then
 fi
 
 echo "Serving docs using $CONFIG"
-# Use the venv mkdocs executable explicitly
-# Old invocation used -f which some mkdocs builds do not accept. Use the CLI form:
-#   mkdocs serve --config-file <config> --strict
-"$VENV/bin/mkdocs" serve --config-file "$CONFIG" --strict
+# Use the venv mkdocs executable explicitly and bind to a fixed dev address
+# Default to 127.0.0.1:8001 but allow overriding with the DEV_ADDR environment variable
+DEV_ADDR="${DEV_ADDR:-127.0.0.1:8001}"
+"$VENV/bin/mkdocs" serve --config-file "$CONFIG" --strict --dev-addr "$DEV_ADDR"
