@@ -7,7 +7,7 @@ This document indexes the n8n workflow JSON templates present in this repository
 - [Email_Summary_Agent.json — Email Summary Agent](#email_summary_agentjson--email-summary-agent)
 - [Gmail_AI_Email_Manager.json — Email Manager](#gmail_ai_email_managerjson--email-manager)
 - [Intelligent_Email_Organization_AI_Content_Classification_Gmail.json — Auto Gmail Labeling (Powered by OpenAI)](#intelligent_email_organization_ai_content_classification_gmailjson--auto-gmail-labeling-powered-by-openai)
-- [Automate_Email_Calendar_Management_Gmail_Google_Calendar_GPT-4o.json — [AOE]  Inbox & Calendar Management Agent](#automate_email_calendar_management_gmail_google_calendar_gpt-4ojson--aoe-inbox-&-calendar-management-agent)
+- [Automate_Email_Calendar_Management_Gmail_Google_Calendar_GPT-4o.json — [AOE]  Inbox & Calendar Management Agent](#automate_email_calendar_management_gmail_google_calendar_gpt-4ojson--aoe--inbox--calendar-management-agent)
 - [Analyze_Sort_Suspicious_Email_Contents_ChatGPT.json — Analyze and Sort Suspicious Email Contents (ChatGPT)](#analyze_sort_suspicious_email_contents_chatgptjson--analyze-and-sort-suspicious-email-contents-chatgpt)
 - [Screen_Score_Resumes_Gmail_Sheets_AI.json — Resume Screener from Gmail to Sheets](#screen_score_resumes_gmail_sheets_aijson--resume-screener-from-gmail-to-sheets)
 - [Automate_Email_Filtering_AI_Summarization.json — Automate Email Filtering and AI Summarization (100% Free and Effective)](#automate_email_filtering_ai_summarizationjson--automate-email-filtering-and-ai-summarization-100-free-and-effective)
@@ -16,7 +16,7 @@ This document indexes the n8n workflow JSON templates present in this repository
 
 ### Functional summary — Email Summary Agent
 
-- Displaces daily at 07:00 (Schedule Trigger) in the Asia/Kolkata timezone.
+- Runs daily at 07:00 (Schedule Trigger) in the Asia/Kolkata timezone.
 - Retrieves all emails from the past 24 hours using the Gmail node with a dynamic filter (query `after:YYYY/MM/DD` calculated for yesterday) for the account `isb.quantana@quantana.in`.
 - Aggregates and structures key fields (id, From, To, CC, snippet) before inference.
 - Produces a structured summary (JSON) using an OpenAI model (gpt-4o-mini) based on the aggregated data.
@@ -24,9 +24,9 @@ This document indexes the n8n workflow JSON templates present in this repository
 
 ### Metadata — Email Summary Agent
 
-| Triggers | Schedules | Integrations | LLM Models | Timezone | Outputs | Notes |
-|----------|-----------|--------------|------------|----------|---------|-------|
-| scheduleTrigger | Daily 07:00 | Gmail, OpenAI | gpt-4o-mini | Asia/Kolkata | HTML (email), JSON (LLM summary) | Gmail filter for last 24h; aggregated fields: id, From, To, CC, snippet; dynamic subject line |
+| Triggers | Schedules | Integrations | LLM Models | Timezone | Outputs | Domain | Notes |
+|----------|-----------|--------------|------------|----------|---------|--------|-------|
+| scheduleTrigger | daily@07:00 | Gmail, OpenAI | gpt-4o-mini | Asia/Kolkata | html_email, json_summary | productivity | Gmail filter for last 24h; aggregated fields: id, From, To, CC, snippet; dynamic subject line |
 
 ### Metadata for RAG — Email Summary Agent
 
@@ -40,7 +40,8 @@ This document indexes the n8n workflow JSON templates present in this repository
   "connectors": ["gmail", "openai"],
   "timezone": "Asia/Kolkata",
   "outputs": ["html_email", "json_summary"],
-  "last_updated_utc": "N/D"
+  "domain": "productivity",
+  "last_updated_utc": "unknown"
 }
 ```
 
@@ -60,9 +61,9 @@ Official workflow page on n8n: [https://n8n.io/workflows/2722-email-summary-agen
 
 ### Metadata — Email Manager
 
-| Triggers | Schedules | Integrations | LLM Models | Timezone | Outputs | Notes |
-|----------|-----------|--------------|------------|----------|---------|-------|
-| gmailTrigger | poll everyMinute | Gmail, Anthropic | claude-sonnet-4-20250514 | N/D | structured JSON (contains `label ID`); Gmail addLabels operation | Uses AI agent with system message for labeling; Get Email and Check Sent use `from`/`to` filters via `$fromAI('email')`; credentials are redacted |
+| Triggers | Schedules | Integrations | LLM Models | Timezone | Outputs | Domain | Notes |
+|----------|-----------|--------------|------------|----------|---------|--------|-------|
+| gmailTrigger | everyMinute | Gmail, Anthropic | claude-sonnet-4-20250514 | N/D | structured_label_id, gmail_addLabels | productivity | Uses AI agent with system message; Get Email & Check Sent use `$fromAI('email')`; credentials redacted |
 
 ### Metadata for RAG — Email Manager
 
@@ -76,7 +77,8 @@ Official workflow page on n8n: [https://n8n.io/workflows/2722-email-summary-agen
   "connectors": ["gmail", "anthropic"],
   "timezone": "N/D",
   "outputs": ["structured_label_id", "gmail_addLabels"],
-  "last_updated_utc": "N/D"
+  "domain": "productivity",
+  "last_updated_utc": "unknown"
 }
 ```
 
@@ -96,9 +98,9 @@ Official workflow page on n8n: [https://n8n.io/workflows/4722-gmail-ai-email-man
 
 ### Metadata — Auto Gmail Labeling (Powered by OpenAI)
 
-| Triggers | Schedules | Integrations | LLM Models | Timezone | Outputs | Notes |
-|----------|-----------|--------------|------------|----------|---------|-------|
-| scheduleTrigger | Every 2 minutes | Gmail, OpenAI | gpt-4.1-nano | N/D | Gmail addLabels, created label, structured JSON (AI output) | Uses Filter Emails Without Excluded Labels; limit=20 on initial fetch; splitInBatches for processing; credentials present but redacted |
+| Triggers | Schedules | Integrations | LLM Models | Timezone | Outputs | Domain | Notes |
+|----------|-----------|--------------|------------|----------|---------|--------|-------|
+| scheduleTrigger | every2m | Gmail, OpenAI | gpt-4.1-nano | N/D | gmail_addLabels, created_label, structured_json_output | productivity | Limit=20; splitInBatches; excludes messages with certain labels; credentials redacted |
 
 ### Metadata for RAG — Auto Gmail Labeling (Powered by OpenAI)
 
@@ -112,7 +114,8 @@ Official workflow page on n8n: [https://n8n.io/workflows/4722-gmail-ai-email-man
   "connectors": ["gmail", "openai"],
   "timezone": "N/D",
   "outputs": ["gmail_addLabels", "created_label", "structured_json_output"],
-  "last_updated_utc": "N/D"
+  "domain": "productivity",
+  "last_updated_utc": "unknown"
 }
 ```
 
@@ -132,9 +135,9 @@ Official workflow page on n8n: [https://n8n.io/workflows/4557-intelligent-email-
 
 ### Metadata — [AOE]  Inbox & Calendar Management Agent
 
-| Triggers | Schedules | Integrations | LLM Models | Timezone | Outputs | Notes |
-|----------|-----------|--------------|------------|----------|---------|-------|
-| chatTrigger, executeWorkflowTrigger, manualTrigger, gmailTrigger | N/D | Gmail, Google Calendar, OpenAI | gpt-4o, gpt-4o-mini, gpt-4.1-mini | N/D | email drafts, deleted emails, calendar events, embeddings/vectorstore entries, summarized thread text | Uses window buffer memory, embeddings and vector store; multiple Gmail and Google Calendar tool nodes; credentials redacted |
+| Triggers | Schedules | Integrations | LLM Models | Timezone | Outputs | Domain | Notes |
+|----------|-----------|--------------|------------|----------|---------|--------|-------|
+| chatTrigger, executeWorkflowTrigger, manualTrigger, gmailTrigger | N/A | Gmail, Google Calendar, OpenAI | gpt-4o, gpt-4o-mini, gpt-4.1-mini | N/D | email_drafts, email_delete, calendar_events, embeddings, vectorstore_entries, summarized_thread_text | productivity | Window buffer memory + vector store; multiple Gmail & Calendar tool nodes; credentials redacted |
 
 ### Metadata for RAG — [AOE]  Inbox & Calendar Management Agent
 
@@ -148,7 +151,8 @@ Official workflow page on n8n: [https://n8n.io/workflows/4557-intelligent-email-
   "connectors": ["gmail", "google_calendar", "openai"],
   "timezone": "N/D",
   "outputs": ["email_drafts", "email_delete", "calendar_events", "embeddings", "vectorstore_entries", "summarized_thread_text"],
-  "last_updated_utc": "N/D"
+  "domain": "productivity",
+  "last_updated_utc": "unknown"
 }
 ```
 
@@ -168,9 +172,9 @@ Official workflow page on n8n: [https://n8n.io/workflows/4366-automate-email-and
 
 ### Metadata — Analyze and Sort Suspicious Email Contents (ChatGPT)
 
-| Triggers | Schedules | Integrations | LLM Models | Timezone | Outputs | Notes |
-|----------|-----------|--------------|------------|----------|---------|-------|
-| gmailTrigger, microsoftOutlookTrigger (disabled) | Every minute | Gmail, Microsoft Outlook (Graph), hcti.io (HTTP), OpenAI, Jira | gpt-4o | N/D | jira_ticket_malicious, jira_ticket_benign, email_screenshot (PNG), email_body.txt, json_analysis | Uses Microsoft Graph to retrieve headers, uses hcti.io to render HTML screenshots, OpenAI node returns JSON (jsonOutput=true) |
+| Triggers | Schedules | Integrations | LLM Models | Timezone | Outputs | Domain | Notes |
+|----------|-----------|--------------|------------|----------|---------|--------|-------|
+| gmailTrigger, microsoftOutlookTrigger (disabled) | everyMinute | Gmail, Microsoft Outlook (Graph), hcti.io (HTTP), OpenAI, Jira | gpt-4o | N/D | jira_ticket_malicious, jira_ticket_benign, email_screenshot, email_body_text, json_analysis | security | Microsoft Graph headers; hcti.io HTML screenshot; OpenAI JSON output enabled |
 
 ### Metadata for RAG — Analyze and Sort Suspicious Email Contents (ChatGPT)
 
@@ -184,7 +188,8 @@ Official workflow page on n8n: [https://n8n.io/workflows/4366-automate-email-and
   "connectors": ["gmail", "microsoft_outlook", "openai", "jira", "http(hcti.io)"],
   "timezone": "N/D",
   "outputs": ["jira_ticket_malicious", "jira_ticket_benign", "email_screenshot", "email_body_text", "json_analysis"],
-  "last_updated_utc": "N/D"
+  "domain": "security",
+  "last_updated_utc": "unknown"
 }
 ```
 
@@ -204,9 +209,9 @@ Official workflow page on n8n: [https://n8n.io/workflows/2666-analyze-and-sort-s
 
 ### Metadata — Resume Screener from Gmail to Sheets
 
-| Triggers | Schedules | Integrations | LLM Models | Timezone | Outputs | Notes |
-|----------|-----------|--------------|------------|----------|---------|-------|
-| gmailTrigger | Every hour (minute 1) | Gmail, Google Sheets, OpenAI | gpt-4o-mini | N/D | Google Sheets row (append), extracted resume text, structured JSON (name, email, linkedin, score) | Trigger filters: `has:attachment`, `labelIds: [UNREAD]`; extracts PDF attachments and uses Structured Output Parser; credentials are present but redacted |
+| Triggers | Schedules | Integrations | LLM Models | Timezone | Outputs | Domain | Notes |
+|----------|-----------|--------------|------------|----------|---------|--------|-------|
+| gmailTrigger | hourly@mm=1 | Gmail, Google Sheets, OpenAI | gpt-4o-mini | N/D | google_sheet_row, extracted_text, structured_output | hr | Filters: has:attachment & UNREAD; PDF extraction + structured output parsing; credentials redacted |
 
 ### Metadata for RAG — Resume Screener from Gmail to Sheets
 
@@ -220,7 +225,8 @@ Official workflow page on n8n: [https://n8n.io/workflows/2666-analyze-and-sort-s
   "connectors": ["gmail", "google_sheets", "openai"],
   "timezone": "N/D",
   "outputs": ["google_sheet_row", "extracted_text", "structured_output"],
-  "last_updated_utc": "N/D"
+  "domain": "hr",
+  "last_updated_utc": "unknown"
 }
 ```
 
@@ -240,9 +246,9 @@ Official workflow page on n8n: [https://n8n.io/workflows/3546-screen-and-score-r
 
 ### Metadata — Automate Email Filtering and AI Summarization (100% Free and Effective)
 
-| Triggers | Schedules | Integrations | LLM Models | Timezone | Outputs | Notes |
-|----------|-----------|--------------|------------|----------|---------|-------|
-| gmailTrigger | Every hour (minute 59) | Gmail, Google Sheets, Groq (lmChatGroq) | llama-3.1-8b-instant (Groq); agent node (model unspecified) | N/D | Google Sheets row (appendOrUpdate), short summary text | Trigger filters: `labelIds: ["CATEGORY_PERSONAL"]`; sender filter `YOUR_SENDER_NAME_FILTER`; content extraction with HTML->text fallback; Groq model node present |
+| Triggers | Schedules | Integrations | LLM Models | Timezone | Outputs | Domain | Notes |
+|----------|-----------|--------------|------------|----------|---------|--------|-------|
+| gmailTrigger | hourly@mm=59 | Gmail, Google Sheets, Groq (lmChatGroq) | llama-3.1-8b-instant | N/D | google_sheet_row, short_summary_text | productivity | Sender filter placeholder; HTML->text fallback; Groq model node present (agent model unspecified) |
 
 ### Metadata for RAG — Automate Email Filtering and AI Summarization (100% Free and Effective)
 
@@ -256,7 +262,8 @@ Official workflow page on n8n: [https://n8n.io/workflows/3546-screen-and-score-r
   "connectors": ["gmail", "google_sheets", "groq"],
   "timezone": "N/D",
   "outputs": ["google_sheet_row", "short_summary_text"],
-  "last_updated_utc": "N/D"
+  "domain": "productivity",
+  "last_updated_utc": "unknown"
 }
 ```
 
