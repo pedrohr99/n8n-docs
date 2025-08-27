@@ -8,6 +8,8 @@ This document indexes the n8n workflow JSON templates present in this repository
 - [Gmail_AI_Email_Manager.json — Email Manager](#gmail_ai_email_managerjson--email-manager)
 - [Intelligent_Email_Organization_AI_Content_Classification_Gmail.json — Auto Gmail Labeling (Powered by OpenAI)](#intelligent_email_organization_ai_content_classification_gmailjson--auto-gmail-labeling-powered-by-openai)
 - [Automate_Email_Calendar_Management_Gmail_Google_Calendar_GPT-4o.json — [AOE]  Inbox & Calendar Management Agent](#automate_email_calendar_management_gmail_google_calendar_gpt-4ojson--aoe-inbox-&-calendar-management-agent)
+- [Analyze_Sort_Suspicious_Email_Contents_ChatGPT.json — Analyze and Sort Suspicious Email Contents (ChatGPT)](#analyze_sort_suspicious_email_contents_chatgptjson--analyze-and-sort-suspicious-email-contents-chatgpt)
+- [Screen_Score_Resumes_Gmail_Sheets_AI.json — Resume Screener from Gmail to Sheets](#screen_score_resumes_gmail_sheets_aijson--resume-screener-from-gmail-to-sheets)
 
 ## Email_Summary_Agent.json — Email Summary Agent
 
@@ -152,3 +154,75 @@ Official workflow page on n8n: [https://n8n.io/workflows/4557-intelligent-email-
 ### Reference — [AOE]  Inbox & Calendar Management Agent
 
 Official workflow page on n8n: [https://n8n.io/workflows/4366-automate-email-and-calendar-management-with-gmail-google-calendar-and-gpt-4o-ai/](https://n8n.io/workflows/4366-automate-email-and-calendar-management-with-gmail-google-calendar-and-gpt-4o-ai/)
+
+## Analyze_Sort_Suspicious_Email_Contents_ChatGPT.json — Analyze and Sort Suspicious Email Contents (ChatGPT)
+
+### Functional summary — Analyze and Sort Suspicious Email Contents (ChatGPT)
+
+- Monitors Gmail (every minute) and (optionally) Microsoft Outlook for incoming messages; extracts headers, body and key fields.
+- Converts email HTML body to a screenshot via hcti.io and retrieves the image for attachment and visual inspection.
+- Analyzes email HTML and headers with an OpenAI model (gpt-4o) producing structured JSON indicating `malicious` and a verbose `summary`.
+- Based on the analysis, automatically creates Jira tickets for potentially malicious or potentially benign emails and attaches the screenshot and email body text.
+- Converts email body to a text file and supports uploading both screenshots and text to Jira for incident handling.
+
+### Metadata — Analyze and Sort Suspicious Email Contents (ChatGPT)
+
+| Triggers | Schedules | Integrations | LLM Models | Timezone | Outputs | Notes |
+|----------|-----------|--------------|------------|----------|---------|-------|
+| gmailTrigger, microsoftOutlookTrigger (disabled) | Every minute | Gmail, Microsoft Outlook (Graph), hcti.io (HTTP), OpenAI, Jira | gpt-4o | N/D | jira_ticket_malicious, jira_ticket_benign, email_screenshot (PNG), email_body.txt, json_analysis | Uses Microsoft Graph to retrieve headers, uses hcti.io to render HTML screenshots, OpenAI node returns JSON (jsonOutput=true) |
+
+### Metadata for RAG — Analyze and Sort Suspicious Email Contents (ChatGPT)
+
+```json
+{
+  "name": "Analyze and Sort Suspicious Email Contents (ChatGPT)",
+  "source_url": "https://n8n.io/workflows/2666-analyze-and-sort-suspicious-email-contents-with-chatgpt/",
+  "repo_path": "workflow_templates/json/Analyze_Sort_Suspicious_Email_Contents_ChatGPT.json",
+  "nodes_count": 25,
+  "triggers": ["gmailTrigger:everyMinute", "microsoftOutlookTrigger:everyMinute(disabled)"],
+  "connectors": ["gmail", "microsoft_outlook", "openai", "jira", "http(hcti.io)"],
+  "timezone": "N/D",
+  "outputs": ["jira_ticket_malicious", "jira_ticket_benign", "email_screenshot", "email_body_text", "json_analysis"],
+  "last_updated_utc": "N/D"
+}
+```
+
+### Reference — Analyze and Sort Suspicious Email Contents (ChatGPT)
+
+Official workflow page on n8n: [https://n8n.io/workflows/2666-analyze-and-sort-suspicious-email-contents-with-chatgpt/](https://n8n.io/workflows/2666-analyze-and-sort-suspicious-email-contents-with-chatgpt/)
+
+## Screen_Score_Resumes_Gmail_Sheets_AI.json — Resume Screener from Gmail to Sheets
+
+### Functional summary — Resume Screener from Gmail to Sheets
+
+- Triggers when a new email with attachments is received in Gmail (unread, label `UNREAD`), polling hourly (minute 1).
+- Downloads PDF attachments and extracts text from the PDF using `Extract text from PDF File`.
+- Sends extracted text to an AI Agent to evaluate the resume, extracting name, email, LinkedIn, and a score; output is parsed by a Structured Output Parser.
+- Appends the parsed results and original resume text to a Google Sheets document (`Add Resume Evaluation to Google Sheets`).
+- Includes a sticky-note with prerequisites such as n8n installation, OpenAI API key, and enabling Google Sheets/Drive APIs.
+
+### Metadata — Resume Screener from Gmail to Sheets
+
+| Triggers | Schedules | Integrations | LLM Models | Timezone | Outputs | Notes |
+|----------|-----------|--------------|------------|----------|---------|-------|
+| gmailTrigger | Every hour (minute 1) | Gmail, Google Sheets, OpenAI | gpt-4o-mini | N/D | Google Sheets row (append), extracted resume text, structured JSON (name, email, linkedin, score) | Trigger filters: `has:attachment`, `labelIds: [UNREAD]`; extracts PDF attachments and uses Structured Output Parser; credentials are present but redacted |
+
+### Metadata for RAG — Resume Screener from Gmail to Sheets
+
+```json
+{
+  "name": "Resume Screener from Gmail to Sheets",
+  "source_url": "https://n8n.io/workflows/3546-screen-and-score-resumes-from-gmail-to-sheets-with-ai/",
+  "repo_path": "workflow_templates/json/Screen_Score_Resumes_Gmail_Sheets_AI.json",
+  "nodes_count": 7,
+  "triggers": ["gmailTrigger:everyHour"],
+  "connectors": ["gmail", "google_sheets", "openai"],
+  "timezone": "N/D",
+  "outputs": ["google_sheet_row", "extracted_text", "structured_output"],
+  "last_updated_utc": "N/D"
+}
+```
+
+### Reference — Resume Screener from Gmail to Sheets
+
+Official workflow page on n8n: [https://n8n.io/workflows/3546-screen-and-score-resumes-from-gmail-to-sheets-with-ai/](https://n8n.io/workflows/3546-screen-and-score-resumes-from-gmail-to-sheets-with-ai/)
