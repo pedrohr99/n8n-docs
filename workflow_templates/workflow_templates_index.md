@@ -10,6 +10,7 @@ This document indexes the n8n workflow JSON templates present in this repository
 - [Automate_Email_Calendar_Management_Gmail_Google_Calendar_GPT-4o.json — [AOE]  Inbox & Calendar Management Agent](#automate_email_calendar_management_gmail_google_calendar_gpt-4ojson--aoe-inbox-&-calendar-management-agent)
 - [Analyze_Sort_Suspicious_Email_Contents_ChatGPT.json — Analyze and Sort Suspicious Email Contents (ChatGPT)](#analyze_sort_suspicious_email_contents_chatgptjson--analyze-and-sort-suspicious-email-contents-chatgpt)
 - [Screen_Score_Resumes_Gmail_Sheets_AI.json — Resume Screener from Gmail to Sheets](#screen_score_resumes_gmail_sheets_aijson--resume-screener-from-gmail-to-sheets)
+- [Automate_Email_Filtering_AI_Summarization.json — Automate Email Filtering and AI Summarization (100% Free and Effective)](#automate_email_filtering_ai_summarizationjson--automate-email-filtering-and-ai-summarization-100-free-and-effective)
 
 ## Email_Summary_Agent.json — Email Summary Agent
 
@@ -226,3 +227,39 @@ Official workflow page on n8n: [https://n8n.io/workflows/2666-analyze-and-sort-s
 ### Reference — Resume Screener from Gmail to Sheets
 
 Official workflow page on n8n: [https://n8n.io/workflows/3546-screen-and-score-resumes-from-gmail-to-sheets-with-ai/](https://n8n.io/workflows/3546-screen-and-score-resumes-from-gmail-to-sheets-with-ai/)
+
+## Automate_Email_Filtering_AI_Summarization.json — Automate Email Filtering and AI Summarization (100% Free and Effective)
+
+### Functional summary — Automate Email Filtering and AI Summarization (100% Free and Effective)
+
+- Triggers: Gmail Trigger polling hourly (everyHour) with filter `labelIds: ["CATEGORY_PERSONAL"]` and downloads no attachments.
+- Filters incoming emails using a sender-name condition (`YOUR_SENDER_NAME_FILTER`) and extracts plain-text or HTML-converted content with fallback and truncation to a safe length.
+- Sends concise summaries to an AI Agent (agent node) that returns a short, focused summary of the email content.
+- Appends or updates a Google Sheets row with the generated summary and key metadata (Date, Sender Name, Sender Email, Subject).
+- Supports configurable AI model replacement (Groq/llama) and Groq Chat Model integration for local/alternative LLM usage.
+
+### Metadata — Automate Email Filtering and AI Summarization (100% Free and Effective)
+
+| Triggers | Schedules | Integrations | LLM Models | Timezone | Outputs | Notes |
+|----------|-----------|--------------|------------|----------|---------|-------|
+| gmailTrigger | Every hour (minute 59) | Gmail, Google Sheets, Groq (lmChatGroq) | llama-3.1-8b-instant (Groq); agent node (model unspecified) | N/D | Google Sheets row (appendOrUpdate), short summary text | Trigger filters: `labelIds: ["CATEGORY_PERSONAL"]`; sender filter `YOUR_SENDER_NAME_FILTER`; content extraction with HTML->text fallback; Groq model node present |
+
+### Metadata for RAG — Automate Email Filtering and AI Summarization (100% Free and Effective)
+
+```json
+{
+  "name": "Automate Email Filtering and AI Summarization (100% Free and Effective)",
+  "source_url": "https://n8n.io/workflows/5678-automate-email-filtering-and-ai-summarization-100percent-free-and-effective-works-724/",
+  "repo_path": "workflow_templates/json/Automate_Email_Filtering_AI_Summarization.json",
+  "nodes_count": 14,
+  "triggers": ["gmailTrigger:everyHour"],
+  "connectors": ["gmail", "google_sheets", "groq"],
+  "timezone": "N/D",
+  "outputs": ["google_sheet_row", "short_summary_text"],
+  "last_updated_utc": "N/D"
+}
+```
+
+### Reference — Automate Email Filtering and AI Summarization (100% Free and Effective)
+
+Official workflow page on n8n: [https://n8n.io/workflows/5678-automate-email-filtering-and-ai-summarization-100percent-free-and-effective-works-724/](https://n8n.io/workflows/5678-automate-email-filtering-and-ai-summarization-100percent-free-and-effective-works-724/)
