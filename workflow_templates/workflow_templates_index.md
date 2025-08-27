@@ -7,6 +7,7 @@ This document indexes the n8n workflow JSON templates present in this repository
 - [Email_Summary_Agent.json — Email Summary Agent](#email_summary_agentjson--email-summary-agent)
 - [Gmail_AI_Email_Manager.json — Email Manager](#gmail_ai_email_managerjson--email-manager)
 - [Intelligent_Email_Organization_AI_Content_Classification_Gmail.json — Auto Gmail Labeling (Powered by OpenAI)](#intelligent_email_organization_ai_content_classification_gmailjson--auto-gmail-labeling-powered-by-openai)
+- [Automate_Email_Calendar_Management_Gmail_Google_Calendar_GPT-4o.json — [AOE]  Inbox & Calendar Management Agent](#automate_email_calendar_management_gmail_google_calendar_gpt-4ojson--aoe-inbox-&-calendar-management-agent)
 
 ## Email_Summary_Agent.json — Email Summary Agent
 
@@ -115,3 +116,39 @@ Official workflow page on n8n: [https://n8n.io/workflows/4722-gmail-ai-email-man
 ### Reference — Auto Gmail Labeling (Powered by OpenAI)
 
 Official workflow page on n8n: [https://n8n.io/workflows/4557-intelligent-email-organization-with-ai-powered-content-classification-for-gmail/](https://n8n.io/workflows/4557-intelligent-email-organization-with-ai-powered-content-classification-for-gmail/)
+
+## Automate_Email_Calendar_Management_Gmail_Google_Calendar_GPT-4o.json — [AOE]  Inbox & Calendar Management Agent
+
+### Functional summary — [AOE]  Inbox & Calendar Management Agent
+
+- Listens for chat triggers and workflow execution triggers; supports manual testing via a Manual Trigger.
+- Retrieves recent emails and Gmail threads, summarizes threads to text, and creates embeddings for vector storage and retrieval.
+- Provides tools to create drafts, delete messages, and add calendar events using Gmail and Google Calendar tools; uses OpenAI chat models (gpt-4o / gpt-4o-mini / gpt-4.1-mini) for assistant logic and summarization.
+- Maintains a conversation window buffer memory and an in-memory vector store for thread history to enable contextual responses and research on past conversations.
+- Classifies emails, applies labels, and can add calendar entries based on assistant outputs.
+
+### Metadata — [AOE]  Inbox & Calendar Management Agent
+
+| Triggers | Schedules | Integrations | LLM Models | Timezone | Outputs | Notes |
+|----------|-----------|--------------|------------|----------|---------|-------|
+| chatTrigger, executeWorkflowTrigger, manualTrigger, gmailTrigger | N/D | Gmail, Google Calendar, OpenAI | gpt-4o, gpt-4o-mini, gpt-4.1-mini | N/D | email drafts, deleted emails, calendar events, embeddings/vectorstore entries, summarized thread text | Uses window buffer memory, embeddings and vector store; multiple Gmail and Google Calendar tool nodes; credentials redacted |
+
+### Metadata for RAG — [AOE]  Inbox & Calendar Management Agent
+
+```json
+{
+  "name": "[AOE]  Inbox & Calendar Management Agent",
+  "source_url": "https://n8n.io/workflows/4366-automate-email-and-calendar-management-with-gmail-google-calendar-and-gpt-4o-ai/",
+  "repo_path": "workflow_templates/json/Automate_Email_Calendar_Management_Gmail_Google_Calendar_GPT-4o.json",
+  "nodes_count": 38,
+  "triggers": ["chatTrigger", "executeWorkflowTrigger", "manualTrigger", "gmailTrigger"],
+  "connectors": ["gmail", "google_calendar", "openai"],
+  "timezone": "N/D",
+  "outputs": ["email_drafts", "email_delete", "calendar_events", "embeddings", "vectorstore_entries", "summarized_thread_text"],
+  "last_updated_utc": "N/D"
+}
+```
+
+### Reference — [AOE]  Inbox & Calendar Management Agent
+
+Official workflow page on n8n: [https://n8n.io/workflows/4366-automate-email-and-calendar-management-with-gmail-google-calendar-and-gpt-4o-ai/](https://n8n.io/workflows/4366-automate-email-and-calendar-management-with-gmail-google-calendar-and-gpt-4o-ai/)
