@@ -6,6 +6,7 @@ This document indexes the n8n workflow JSON templates present in this repository
 
 - [Email_Summary_Agent.json — Email Summary Agent](#email_summary_agentjson--email-summary-agent)
 - [Gmail_AI_Email_Manager.json — Email Manager](#gmail_ai_email_managerjson--email-manager)
+- [Intelligent_Email_Organization_AI_Content_Classification_Gmail.json — Auto Gmail Labeling (Powered by OpenAI)](#intelligent_email_organization_ai_content_classification_gmailjson--auto-gmail-labeling-powered-by-openai)
 
 ## Email_Summary_Agent.json — Email Summary Agent
 
@@ -78,3 +79,39 @@ Official workflow page on n8n: [https://n8n.io/workflows/2722-email-summary-agen
 ### Reference — Email Manager
 
 Official workflow page on n8n: [https://n8n.io/workflows/4722-gmail-ai-email-manager/](https://n8n.io/workflows/4722-gmail-ai-email-manager/)
+
+## Intelligent_Email_Organization_AI_Content_Classification_Gmail.json — Auto Gmail Labeling (Powered by OpenAI)
+
+### Functional summary — Auto Gmail Labeling (Powered by OpenAI)
+
+- Trigger: Schedule Trigger running every 2 minutes.
+- Fetches messages with `Gmail - Get All Messages` using `limit: 20` and `readStatus: both` and then iterates per message with `Loop Over Items`.
+- Extracts key fields (id, from, headers.subject, text) via `Extract Email Data` and sends content to an AI agent for labeling.
+- Uses OpenAI (`gpt-4.1-nano`) via `OpenAI Chat Model` / agent node to determine a single label; stores AI output and maps it to existing Gmail labels or creates a new label, then applies it via Gmail `addLabels`.
+- Filters out messages that already contain excluded labels using `Filter Emails Without Excluded Labels` (list of excluded label IDs present in code node).
+
+### Metadata — Auto Gmail Labeling (Powered by OpenAI)
+
+| Triggers | Schedules | Integrations | LLM Models | Timezone | Outputs | Notes |
+|----------|-----------|--------------|------------|----------|---------|-------|
+| scheduleTrigger | Every 2 minutes | Gmail, OpenAI | gpt-4.1-nano | N/D | Gmail addLabels, created label, structured JSON (AI output) | Uses Filter Emails Without Excluded Labels; limit=20 on initial fetch; splitInBatches for processing; credentials present but redacted |
+
+### Metadata for RAG — Auto Gmail Labeling (Powered by OpenAI)
+
+```json
+{
+  "name": "Auto Gmail Labeling (Powered by OpenAI)",
+  "source_url": "https://n8n.io/workflows/4557-intelligent-email-organization-with-ai-powered-content-classification-for-gmail/",
+  "repo_path": "workflow_templates/json/Intelligent_Email_Organization_AI_Content_Classification_Gmail.json",
+  "nodes_count": 18,
+  "triggers": ["schedule:every2minutes"],
+  "connectors": ["gmail", "openai"],
+  "timezone": "N/D",
+  "outputs": ["gmail_addLabels", "created_label", "structured_json_output"],
+  "last_updated_utc": "N/D"
+}
+```
+
+### Reference — Auto Gmail Labeling (Powered by OpenAI)
+
+Official workflow page on n8n: [https://n8n.io/workflows/4557-intelligent-email-organization-with-ai-powered-content-classification-for-gmail/](https://n8n.io/workflows/4557-intelligent-email-organization-with-ai-powered-content-classification-for-gmail/)
