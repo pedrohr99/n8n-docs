@@ -1,0 +1,223 @@
+{
+  "name": "Medium Daily Digest Summarizer",
+  "active": false,
+  "nodes": [
+    {
+      "id": "sched-1",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [100, 300],
+      "parameters": {
+        "rule": {
+          "interval": [
+            { "triggerAtHour": 9, "triggerAtMinute": 30, "field": "days", "days": ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"] }
+          ]
+        }
+      }
+    },
+    {
+      "id": "gmail-1",
+      "name": "Gmail Get Digest",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [300, 300],
+      "credentials": { "gmailOAuth2": "<GMAIL_CREDENTIALS_PLACEHOLDER>" },
+      "parameters": {
+        "resource": "message",
+        "operation": "getMany",
+        "q": "from:noreply@medium.com to:pedroh.r99@gmail.com newer_than:2d",
+        "limit": 1,
+        "returnAll": false,
+        "simplify": false
+      }
+    },
+    {
+      "id": "gmail-2",
+      "name": "Gmail Get Full Message",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [500, 300],
+      "credentials": { "gmailOAuth2": "<GMAIL_CREDENTIALS_PLACEHOLDER>" },
+      "parameters": {
+        "resource": "message",
+        "operation": "get",
+        "messageId": "={{$json[\"id\"]}}",
+        "simplify": false
+      }
+    },
+    {
+      "id": "html-1",
+      "name": "Extract Medium Links",
+      "type": "n8n-nodes-base.htmlExtract",
+      "typeVersion": 1,
+      "position": [700, 300],
+      "parameters": {
+        "dataPropertyName": "payload.body.data",
+        "extractionValues": [
+          {
+            "name": "linkText",
+            "cssSelector": "a[href*=\"medium.com\"]",
+            "returnValue": "textContent"
+          },
+          {
+            "name": "linkUrl",
+            "cssSelector": "a[href*=\"medium.com\"]",
+            "returnValue": "attribute",
+            "attribute": "href"
+          }
+        ],
+        "options": {
+          "multipleMatches": true,
+          "cleanup": true
+        }
+      }
+    },
+    {
+      "id": "code-1",
+      "name": "Filter & Dedup Links",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [900, 300],
+      "parameters": {
+        "runOnceForAllItems": true,
+        "jsCode": "const seen = new Set();\nconst filtered = [];\nfor (const item of items) {\n  const url = item.json.linkUrl;\n  if (!url) continue;\n  if (url.includes('unsubscribe') || url.includes('help') || url.includes('privacy')) continue;\n  if (!seen.has(url)) {\n    seen.add(url);\n    filtered.push({ json: { url } });\n  }\n}\nreturn filtered;"
+      }
+    },
+    {
+      "id": "http-1",
+      "name": "Fetch Article",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [1100, 300],
+      "parameters": {
+        "url": "={{$json[\"url\"]}}",
+        "method": "GET",
+        "responseFormat": "string",
+        "sendHeaders": true,
+        "headerParameters": [
+          { "name": "User-Agent", "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0 Safari/537.36" },
+          { "name": "Cookie", "value": "<MEDIUM_COOKIE_PLACEHOLDER>" }
+        ],
+        "options": {
+          "followRedirects": true
+        }
+      }
+    },
+    {
+      "id": "html-2",
+      "name": "Extract Article Content",
+      "type": "n8n-nodes-base.htmlExtract",
+      "typeVersion": 1,
+      "position": [1300, 300],
+      "parameters": {
+        "dataPropertyName": "body",
+        "extractionValues": [
+          {
+            "name": "title",
+            "cssSelector": "title",
+            "returnValue": "textContent"
+          },
+          {
+            "name": "article",
+            "cssSelector": "article",
+            "returnValue": "textContent"
+          },
+          {
+            "name": "description",
+            "cssSelector": "meta[name=description]",
+            "returnValue": "attribute",
+            "attribute": "content"
+          }
+        ],
+        "options": { "multipleMatches": false, "cleanup": true }
+      }
+    },
+    {
+      "id": "openai-1",
+      "name": "GPT-5 Mini Summarize",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [1500, 300],
+      "credentials": { "openAiApi": "<OPENAI_API_KEY_PLACEHOLDER>" },
+      "parameters": {
+        "resource": "chat",
+        "operation": "createChatCompletion",
+        "model": "gpt-5-mini",
+        "temperature": 0.3,
+        "maxTokens": 120,
+        "messages": [
+          {
+            "role": "system",
+            "content": "Eres un asistente que resume artículos de Medium."
+          },
+          {
+            "role": "user",
+            "content": "Resume el siguiente texto en español en 2–3 frases (≤60 palabras), de forma neutral, concisa y sin opiniones. Texto: {{$json[\"article\"] || $json[\"description\"]}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "code-2",
+      "name": "Assemble Markdown",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [1700, 300],
+      "parameters": {
+        "runOnceForAllItems": true,
+        "jsCode": "const date = new Date().toISOString().split('T')[0];\nlet md = `# Medium Daily Digest — ${date}\\n\\n`;\nfor (const item of items) {\n  const t = item.json.title || 'Sin título';\n  const s = item.json.text || item.json.summary || 'Sin resumen';\n  const u = item.json.url || '';\n  md += `## ${t}\\n\\n${s}\\n\\nLink: ${u}\\n\\n`;\n}\nreturn [{ json: { content: md } }];"
+      }
+    },
+    {
+      "id": "convert-1",
+      "name": "Convert to Markdown File",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1,
+      "position": [1900, 300],
+      "parameters": {
+        "dataPropertyName": "content",
+        "binaryPropertyName": "data",
+        "fileName": "={{\"medium-digest-\" + new Date().toISOString().split('T')[0] + \".md\"}}",
+        "fileExtension": "md"
+      }
+    },
+    {
+      "id": "drive-1",
+      "name": "Upload to Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 1,
+      "position": [2100, 300],
+      "credentials": { "googleDriveOAuth2": "<GOOGLE_DRIVE_CREDENTIALS_PLACEHOLDER>" },
+      "parameters": {
+        "operation": "upload",
+        "binaryData": true,
+        "binaryPropertyName": "data",
+        "parents": ["<GOOGLE_DRIVE_FOLDER_ID_medium_com>"]
+      }
+    }
+  ],
+  "connections": {
+    "sched-1": { "main": [[{ "node": "Gmail Get Digest", "type": "main", "index": 0 }]] },
+    "gmail-1": { "main": [[{ "node": "Gmail Get Full Message", "type": "main", "index": 0 }]] },
+    "gmail-2": { "main": [[{ "node": "Extract Medium Links", "type": "main", "index": 0 }]] },
+    "html-1": { "main": [[{ "node": "Filter & Dedup Links", "type": "main", "index": 0 }]] },
+    "code-1": { "main": [[{ "node": "Fetch Article", "type": "main", "index": 0 }]] },
+    "http-1": { "main": [[{ "node": "Extract Article Content", "type": "main", "index": 0 }]] },
+    "html-2": { "main": [[{ "node": "GPT-5 Mini Summarize", "type": "main", "index": 0 }]] },
+    "openai-1": { "main": [[{ "node": "Assemble Markdown", "type": "main", "index": 0 }]] },
+    "code-2": { "main": [[{ "node": "Convert to Markdown File", "type": "main", "index": 0 }]] },
+    "convert-1": { "main": [[{ "node": "Upload to Google Drive", "type": "main", "index": 0 }]] }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Madrid",
+    "errorWorkflow": "<ERROR_WORKFLOW_ID_PLACEHOLDER>",
+    "callerPolicy": "workflowsFromSameOwner",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "saveManualExecutions": false,
+    "saveExecutionProgress": false,
+    "timeout": 0
+  }
+}
