@@ -11,6 +11,7 @@ This document indexes the n8n workflow JSON templates present in this repository
 - [Analyze_Sort_Suspicious_Email_Contents_ChatGPT.json — Analyze and Sort Suspicious Email Contents (ChatGPT)](#analyze_sort_suspicious_email_contents_chatgptjson--analyze-and-sort-suspicious-email-contents-chatgpt)
 - [Screen_Score_Resumes_Gmail_Sheets_AI.json — Resume Screener from Gmail to Sheets](#screen_score_resumes_gmail_sheets_aijson--resume-screener-from-gmail-to-sheets)
 - [Automate_Email_Filtering_AI_Summarization.json — Automate Email Filtering and AI Summarization (100% Free and Effective)](#automate_email_filtering_ai_summarizationjson--automate-email-filtering-and-ai-summarization-100-free-and-effective)
+- [Scrape_and_summarize_webpages_with_AI.json — Scrape and Summarize Webpages with AI](#scrape_and_summarize_webpages_with_aijson--scrape-and-summarize-webpages-with-ai)
 
 ## Email_Summary_Agent.json — Email Summary Agent
 
@@ -270,3 +271,42 @@ Official workflow page on n8n: [https://n8n.io/workflows/3546-screen-and-score-r
 ### Reference — Automate Email Filtering and AI Summarization (100% Free and Effective)
 
 Official workflow page on n8n: [https://n8n.io/workflows/5678-automate-email-filtering-and-ai-summarization-100percent-free-and-effective-works-724/](https://n8n.io/workflows/5678-automate-email-filtering-and-ai-summarization-100percent-free-and-effective-works-724/)
+
+## Scrape_and_summarize_webpages_with_AI.json — Scrape and Summarize Webpages with AI
+
+### Functional summary — Scrape and Summarize Webpages with AI
+
+- Trigger manual: executes on demand via Manual Trigger.
+- Descarga la página índice de ensayos de Paul Graham (`articles.html`).
+- Extrae los enlaces de ensayos (selector `table table a`), los divide en items y limita a los primeros 3.
+- Recupera el HTML de cada ensayo y extrae el `<title>` y el texto del `body` (omite `img, nav`).
+- Carga el texto como documento, lo fragmenta con Recursive Character Text Splitter (`chunkSize=6000`).
+- Ejecuta una cadena de resumen (LangChain Summarization Chain) usando el modelo OpenAI `gpt-4o-mini`.
+- Fusiona título y resumen y limpia la salida dejando: `title`, `summary`, `url`.
+
+### Metadata — Scrape and Summarize Webpages with AI
+
+| Triggers | Schedules | Integrations | LLM Models | Timezone | Outputs | Domain | Notes |
+|----------|-----------|--------------|------------|----------|---------|--------|-------|
+| manualTrigger | N/A | HTTP, OpenAI | gpt-4o-mini | N/D | title, summary, url | content | Limita a 3 ensayos; chunkSize=6000; extracción HTML selectiva |
+
+### Metadata for RAG — Scrape and Summarize Webpages with AI
+
+```json
+{
+  "name": "Scrape and Summarize Webpages with AI",
+  "source_url": "https://n8n.io/workflows/1951-scrape-and-summarize-webpages-with-ai/",
+  "repo_path": "workflow_templates/json/Scrape_and_summarize_webpages_with_AI.json",
+  "nodes_count": 16,
+  "triggers": ["manualTrigger"],
+  "connectors": ["http", "openai"],
+  "timezone": "N/D",
+  "outputs": ["title", "summary", "url"],
+  "domain": "content",
+  "last_updated_utc": "unknown"
+}
+```
+
+### Reference — Scrape and Summarize Webpages with AI
+
+Official workflow page on n8n: [https://n8n.io/workflows/1951-scrape-and-summarize-webpages-with-ai/](https://n8n.io/workflows/1951-scrape-and-summarize-webpages-with-ai/)
