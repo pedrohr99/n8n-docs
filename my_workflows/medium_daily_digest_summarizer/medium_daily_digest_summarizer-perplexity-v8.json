@@ -12,13 +12,13 @@
           ]
         }
       },
-      "id": "c0808051-11de-45a8-bb2a-481635045ea2",
+      "id": "c71760d0-0a66-4bd1-8964-aa08d2980ec3",
       "name": "Schedule Trigger",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
-        -912,
-        192
+        -2880,
+        16
       ]
     },
     {
@@ -32,13 +32,13 @@
         },
         "options": {}
       },
-      "id": "c15407ad-ad7f-4436-a648-42239a91ffd3",
+      "id": "e1e16807-fa48-46b2-ac5e-27011dad6480",
       "name": "Gmail Get Digest",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2,
       "position": [
-        -704,
-        192
+        -2672,
+        16
       ],
       "webhookId": "6c74cb56-ac2f-4ab6-abe0-ab0315d9f2c3",
       "credentials": {
@@ -52,56 +52,13 @@
       "parameters": {
         "jsCode": "const seen = new Set();\nconst filtered = [];\n\nfor (const item of items) {\n  const urls = item.json.urls;\n  if (!urls) continue;\n\n  // Siempre iteramos sobre un array\n  const list = Array.isArray(urls) ? urls : [urls];\n\n  for (let url of list) {\n    if (typeof url !== 'string') continue;\n\n    // descartar enlaces basura\n    if (\n      url.includes('unsubscribe') ||\n      url.includes('help') ||\n      url.includes('privacy')\n    ) continue;\n\n    // solo dominios medium.com con perfil @\n    if (!url.startsWith('https://medium.com/@')) continue;\n\n    // limpiar cola de parámetros (? y ----...)\n    let cleanUrl = url.split('?')[0];           // quita desde la primera ?\n    cleanUrl = cleanUrl.replace(/----.*$/, ''); // quita extras \"----...\"\n\n    // validar que tiene exactamente 3 segmentos tras medium.com\n    const parts = cleanUrl.replace('https://', '').split('/');\n    // [\"medium.com\", \"@usuario\", \"titulo-articulo-id\"]\n    if (parts.length === 3) {\n      if (!seen.has(cleanUrl)) {\n        seen.add(cleanUrl);\n        filtered.push({ json: { url: cleanUrl } });\n      }\n    }\n  }\n}\n\nreturn filtered;"
       },
-      "id": "9f3ae17c-4c73-4ef7-a20e-ea9ca45c3186",
+      "id": "df628e92-8ba5-4bda-b02b-626a5db408e5",
       "name": "Filter & Dedup Links",
       "type": "n8n-nodes-base.code",
       "typeVersion": 1,
       "position": [
-        304,
-        192
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "const date = new Date().toISOString().split('T');\nlet md = `# Medium Daily Digest — ${date}\\n\\n`;\nfor (const item of items) {\n  const t = item.json.title_translate || item.json.title || 'Sin título';\n  const s = item.json.summary_translate || item.json.text || item.json.summary || 'Sin resumen';\n  const u = item.json.url || '';\n  md += `## ${t}\\n\\n${s}\\n\\nLink: ${u}\\n\\n`;\n}\nreturn [{ json: { content: md } }];\n"
-      },
-      "id": "4c4ee173-84b3-4cac-8502-85450d6d2ba3",
-      "name": "Assemble Markdown",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 1,
-      "position": [
-        1472,
-        192
-      ]
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "id": "daa310e8-83ac-4362-b839-c4aed8043277",
-      "name": "Convert to Markdown File",
-      "type": "n8n-nodes-base.convertToFile",
-      "typeVersion": 1,
-      "position": [
-        1728,
-        192
-      ]
-    },
-    {
-      "parameters": {
-        "binaryData": true,
-        "parents": [
-          "<GOOGLE_DRIVE_FOLDER_ID_medium_com>"
-        ],
-        "options": {}
-      },
-      "id": "b5e322c0-5665-4895-81f7-def005532776",
-      "name": "Upload to Google Drive",
-      "type": "n8n-nodes-base.googleDrive",
-      "typeVersion": 1,
-      "position": [
-        1936,
-        192
+        -1664,
+        16
       ]
     },
     {
@@ -111,10 +68,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -496,
-        192
+        -2464,
+        16
       ],
-      "id": "47fe2cdb-f921-4f83-a3a2-83a61b77559e",
+      "id": "50eb35c2-fe67-477b-bfef-d0bc38efe27d",
       "name": "Clean HTML"
     },
     {
@@ -137,10 +94,10 @@
       "type": "n8n-nodes-base.html",
       "typeVersion": 1.2,
       "position": [
-        -288,
-        192
+        -2256,
+        16
       ],
-      "id": "6764b2d8-1e75-44a7-80ec-751cd84597ee",
+      "id": "d970cfa1-71dc-4c56-b16a-a2388d902fd7",
       "name": "Extract Medium Links"
     },
     {
@@ -166,10 +123,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        512,
-        192
+        -1456,
+        16
       ],
-      "id": "6079d5fd-c3f4-4b65-8fd9-46ba073c3f1c",
+      "id": "8010a296-334d-4976-93da-8a99e5105b44",
       "name": "Medium ES summary Workflow"
     },
     {
@@ -230,10 +187,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        720,
-        192
+        -1248,
+        16
       ],
-      "id": "aad32e98-6c10-48e1-8191-29602755b797",
+      "id": "3c870e35-7bb7-48a2-bb35-8cfa9ecdd4e3",
       "name": "Needs Retry?"
     },
     {
@@ -243,12 +200,50 @@
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        960,
-        -48
+        -1008,
+        -224
       ],
-      "id": "391f0267-af10-486f-86b0-d4c29d7a6609",
+      "id": "05acefe1-16a6-43a5-8e81-21baec69f752",
       "name": "Wait 3s",
       "webhookId": "204befdc-50e3-4162-bd89-6837e493ea80"
+    },
+    {
+      "parameters": {
+        "jsCode": "const date = new Date();\nconst today = new Date();\nconst formattedDate = today.toLocaleDateString('es-ES'); // Ej: 30/08/2025\nconst subject = `Resumen Artículos medium.com ${formattedDate}`;\nconst header = `<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"></head>`;\nlet html = header + `<body style=\"margin:0;padding:24px;background:#f7f9fc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#101828;\">`;\nhtml += `<div style=\"max-width:720px;margin:0 auto;\">`;\nhtml += `<h1 style=\"margin:0 0 16px 0;font-size:24px;line-height:32px;color:#0B5FFF;\">Medium Daily Digest</h1>`;\nhtml += `<p style=\"margin:0 0 24px 0;font-size:14px;color:#475467;\">Resumen generado automáticamente.</p>`;\nfor (const item of items) {\n  const t = item.json.title || 'Untitled';\n  const te = item.json.title_translate || '';\n  const s = item.json.summary_translate || item.json.summary || item.json.text || '';\n  const u = item.json.url || '';\n  html += `<section style=\"background:#ffffff;border:1px solid #e6ecf1;border-radius:12px;padding:16px;margin:0 0 16px 0;\">`;\n  html += `<h2 style=\"margin:0 0 4px 0;font-size:18px;line-height:26px;color:#0B5FFF;\">${t}</h2>`;\n  html += `<h3 style=\"margin:0 0 8px 0;font-size:15px;line-height:22px;color:#12B76A;font-weight:600;\">${te}</h3>`;\n  html += `<p style=\"margin:0 0 12px 0;font-size:14px;line-height:22px;color:#344054;\">${s}</p>`;\n  html += `<a href=\"${u}\" style=\"display:inline-block;background:#0B5FFF;color:#ffffff;text-decoration:none;padding:8px 12px;border-radius:8px;font-size:14px;font-weight:600;\">Leer en Medium</a>`;\n  html += `</section>`;\n}\nhtml += `<p style=\"margin:24px 0 0 0;font-size:12px;color:#98A2B3;\">Enviado por n8n · ${date.toISOString().slice(0,10)}</p>`;\nhtml += `</div></body></html>`;\nreturn [{ json: { subject, html } }];"
+      },
+      "id": "7d834fea-e460-4659-be68-90bcb3847b6c",
+      "name": "Assemble HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        -496,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "pedroh.r99@gmail.com",
+        "subject": "={{$json.subject}}",
+        "message": "={{$json.html}}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "3d455e23-5a37-43b4-801c-eff4ce38543e",
+      "name": "Gmail Send Digest",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        16
+      ],
+      "webhookId": "83351bd1-663c-440e-a1f1-58e2f0c4228f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "viPkNlIYja6xb7WC",
+          "name": "Gmail account pedroh.r99"
+        }
+      }
     }
   ],
   "pinData": {
@@ -570,28 +565,6 @@
         ]
       ]
     },
-    "Assemble Markdown": {
-      "main": [
-        [
-          {
-            "node": "Convert to Markdown File",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Convert to Markdown File": {
-      "main": [
-        [
-          {
-            "node": "Upload to Google Drive",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Clean HTML": {
       "main": [
         [
@@ -636,7 +609,7 @@
         ],
         [
           {
-            "node": "Assemble Markdown",
+            "node": "Assemble HTML",
             "type": "main",
             "index": 0
           }
@@ -653,13 +626,24 @@
           }
         ]
       ]
+    },
+    "Assemble HTML": {
+      "main": [
+        [
+          {
+            "node": "Gmail Send Digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "b851daba-cfdf-4c9d-be16-d17565c72196",
+  "versionId": "cdc06d2f-3788-4715-afe9-8685750b0b3f",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "a396a459e20e70dadf88b2d8f204762d2d80680fe1414733547fa53f595d718e"
