@@ -1,157 +1,303 @@
 {
-  "name": "medium_articles_es_summary_gpt5_mini",
+  "name": "medium_articles_es_summary",
   "nodes": [
     {
-      "id": "exec-trigger",
+      "parameters": {},
+      "id": "37c82eb5-f4ad-49b9-b89f-53440ae630a1",
       "name": "When executed by another node",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
-      "position": [-1200, 200],
+      "position": [
+        -1056,
+        128
+      ],
       "typeVersion": 1
     },
     {
-      "id": "fetch-html",
+      "parameters": {
+        "url": "={{ 'https://r.jina.ai/http://' + $json['url'].replace('https://','').replace('http://','') }}",
+        "options": {
+          "redirect": {},
+          "timeout": 15000
+        }
+      },
+      "id": "099eea04-bdc4-4add-acbb-2d7960354425",
       "name": "Fetch Medium HTML",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [-980, 200],
+      "position": [
+        -848,
+        128
+      ]
+    },
+    {
       "parameters": {
-        "url": "={{$json[\"url\"]}}",
-        "responseFormat": "string",
-        "options": {
-          "redirect": { "followRedirects": true },
-          "headers": {
-            "headers": [
-              { "name": "User-Agent", "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36" }
-            ]
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
           },
-          "timeout": 15000
-        }
-      }
-    },
-    {
-      "id": "extract",
-      "name": "Extract Title + Text",
-      "type": "n8n-nodes-base.html",
-      "typeVersion": 1.2,
-      "position": [-760, 200],
-      "parameters": {
-        "operation": "extractHtmlContent",
-        "dataPropertyName": "data",
-        "extractionValues": {
-          "values": [
-            { "key": "ogTitle", "cssSelector": "meta[property=\"og:title\"]", "returnValue": "attribute", "attribute": "content" },
-            { "key": "h1", "cssSelector": "h1" },
-            { "key": "articleP", "cssSelector": "article p, section p", "returnArray": true }
-          ]
-        }
-      }
-    },
-    {
-      "id": "prepare",
-      "name": "Prepare Content",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [-540, 200],
-      "parameters": {
-        "jsCode": "const title = $json.ogTitle || $json.h1 || 'Sin título';\nconst paras = Array.isArray($json.articleP) ? $json.articleP : ($json.articleP ? [$json.articleP] : []);\nlet content = paras.join('\\n');\ncontent = content.replace(/\\s+/g,' ').trim();\nif (content.length > 8000) content = content.slice(0, 8000) + '...';\nconst htmlRaw = $json.data || '';\nconst paywalled = /meteredContent|paywall|member-only|signupWall/i.test(htmlRaw);\nreturn [{ json: { url: $json.url, title, content, paywalled } }];"
-      }
-    },
-    {
-      "id": "if-paywall",
+          "conditions": [
+            {
+              "id": "4f53c65c-8108-4086-87f2-93cca9941812",
+              "leftValue": "={{ $json.paywalled }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "923b768b-cec4-4381-a941-6f04cb4017d1",
       "name": "Member-only?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [-340, 200],
-      "parameters": {
-        "conditions": { "booleans": [ { "value1": "={{$json.paywalled}}" } ] }
-      }
+      "position": [
+        0,
+        128
+      ]
     },
     {
-      "id": "log-skip",
+      "parameters": {},
+      "id": "2a572ccf-dbf8-4bef-8579-b1b3946b3936",
       "name": "Log (member-only)",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
-      "position": [-140, 80]
+      "position": [
+        208,
+        0
+      ]
     },
     {
-      "id": "shape-skip",
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "title",
+              "type": "string",
+              "value": "={{$json.title}}"
+            },
+            {
+              "name": "title_translate",
+              "type": "string",
+              "value": "Contenido solo para miembros"
+            },
+            {
+              "name": "summary_translate",
+              "type": "string",
+              "value": "No se pudo acceder sin login."
+            },
+            {
+              "name": "url",
+              "type": "string",
+              "value": "={{$json.url}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "edaeb9ed-5c98-4f22-a131-16376377c735",
       "name": "Shape Output (skip)",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [60, 80],
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            { "name": "title", "type": "string", "value": "={{$json.title}}" },
-            { "name": "title_translate", "type": "string", "value": "Contenido solo para miembros" },
-            { "name": "summary_translate", "type": "string", "value": "No se pudo acceder sin login." },
-            { "name": "url", "type": "string", "value": "={{$json.url}}" }
-          ]
-        }
-      }
+      "position": [
+        416,
+        0
+      ]
     },
     {
-      "id": "openai",
-      "name": "OpenAI Chat (JSON)",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [-140, 320],
       "parameters": {
         "method": "POST",
         "url": "https://api.openai.com/v1/chat/completions",
-        "responseFormat": "json",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "openAiApi",
         "sendBody": true,
-        "jsonParameters": true,
-        "options": { "timeout": 30000 },
-        "bodyParametersJson": "={\n  \"model\": \"gpt-5-mini\",\n  \"response_format\": {\"type\":\"json_object\"},\n  \"temperature\": 0.2,\n  \"max_tokens\": 300,\n  \"messages\": [\n    {\"role\":\"system\",\"content\":\"Eres un asistente que devuelve exclusivamente JSON válido. Tarea: traducir el título al español y generar un resumen claro y conciso de máximo 3 frases en español. Responde con las claves exactas: title_translate y summary_translate.\"},\n    {\"role\":\"user\",\"content\": \"Título original: {{$json.title}}\\n\\nContenido:\\n{{$json.content}}\"}\n  ]\n}"
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({\n  model: \"gpt-5-mini\",\n  temperature: 1.0,\n  reasoning_effort: \"low\" ,           // reduce tokens de razonamiento\n  response_format: { type: \"json_object\" },\n  messages: [\n    {\n      role: \"system\",\n      content: \"Eres un redactor técnico y respondes SOLO JSON válido.\"\n    },\n    {\n      role: \"user\",\n      content:\n        \"Título original: \" + $json.title + \"\\n\" +\n        \"URL: \" + $json.url + \"\\n\" +\n        \"Contenido:\\n\" + $json.content + \"\\n\\n\" +\n        \"Devuelve SOLO este objeto JSON:\\n\" +\n        \"{\\\"title_translate\\\":\\\"título en español natural (máx. 90 caracteres)\\\",\\\"summary_translate\\\":\\\"resumen claro en español, 2-3 frases sencillas\\\"}\"\n    }\n  ],\n  max_completion_tokens: 1024            // sube este valor para evitar finish_reason='length'\n}) }}\n",
+        "options": {
+          "timeout": 30000
+        }
       },
+      "id": "a95544f6-95b9-4d94-bd29-cd6d7aabe879",
+      "name": "OpenAI Chat (JSON)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        208,
+        240
+      ],
       "credentials": {
-        "openAiApi": { "id": "REPLACE_WITH_YOUR_CRED_ID", "name": "OpenAI API" }
+        "openAiApi": {
+          "id": "FvAf0CGYFlHBPNBX",
+          "name": "OpenAi account"
+        }
       }
     },
     {
-      "id": "parse",
+      "parameters": {
+        "jsCode": "// 1) Leer el string JSON devuelto por Chat Completions\nconst raw = $json?.choices?.[0]?.message?.content ?? \"{}\";\n// 2) Parsear con tolerancia a errores\nlet data;\ntry {\n  data = JSON.parse(raw);\n} catch {\n  data = {\n    title_translate: \"Salida no válida\",\n    summary_translate: \"El modelo no devolvió JSON parseable.\"\n  };\n}\n// 3) Recuperar título y URL del nodo anterior\nconst prev = $('Parse Reader Markdown').first().json;\nconst title = prev?.title ?? \"\";\nconst url = prev?.url ?? \"\";\n// 4) Salida final\nreturn [\n  {\n    json: {\n      title,\n      title_translate: data.title_translate ?? \"\",\n      summary_translate: data.summary_translate ?? \"\",\n      url\n    }\n  }\n];\n"
+      },
+      "id": "6d9d09e0-3a0c-44ed-9cf1-97c030ee528f",
       "name": "Parse OpenAI JSON",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [60, 320],
-      "parameters": {
-        "jsCode": "const choice = $json.choices?.;\nconst content = choice?.message?.content || '{}';\nlet obj;\ntry { obj = JSON.parse(content); } catch(e) { obj = { title_translate: 'Error de parseo', summary_translate: 'Salida no válida' }; }\nreturn [{ json: { url: $json.url, title: $json.title, ...obj } }];"
-      }
+      "position": [
+        416,
+        240
+      ]
     },
     {
-      "id": "shape",
-      "name": "Shape Output",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [260, 320],
       "parameters": {
         "assignments": {
           "assignments": [
-            { "name": "title", "type": "string", "value": "={{$json.title}}" },
-            { "name": "title_translate", "type": "string", "value": "={{$json.title_translate}}" },
-            { "name": "summary_translate", "type": "string", "value": "={{$json.summary_translate}}" },
-            { "name": "url", "type": "string", "value": "={{$json.url}}" }
+            {
+              "name": "title",
+              "type": "string",
+              "value": "={{$json.title}}"
+            },
+            {
+              "name": "title_translate",
+              "type": "string",
+              "value": "={{$json.title_translate}}"
+            },
+            {
+              "name": "summary_translate",
+              "type": "string",
+              "value": "={{$json.summary_translate}}"
+            },
+            {
+              "name": "url",
+              "type": "string",
+              "value": "={{$json.url}}"
+            }
           ]
-        }
-      }
-    }
-  ],
-  "connections": {
-    "Fetch Medium HTML": { "main": [[{ "node": "Extract Title + Text", "type": "main", "index": 0 }]] },
-    "When executed by another node": { "main": [[{ "node": "Fetch Medium HTML", "type": "main", "index": 0 }]] },
-    "Extract Title + Text": { "main": [[{ "node": "Prepare Content", "type": "main", "index": 0 }]] },
-    "Prepare Content": { "main": [[{ "node": "Member-only?", "type": "main", "index": 0 }]] },
-    "Member-only?": {
-      "main": [
-        [{ "node": "Log (member-only)", "type": "main", "index": 0 }],
-        [{ "node": "OpenAI Chat (JSON)", "type": "main", "index": 0 }]
+        },
+        "options": {}
+      },
+      "id": "1a78dec2-98ac-4980-aacd-78e0b738cf09",
+      "name": "Shape Output",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        608,
+        240
       ]
     },
-    "Log (member-only)": { "main": [[{ "node": "Shape Output (skip)", "type": "main", "index": 0 }]] },
-    "OpenAI Chat (JSON)": { "main": [[{ "node": "Parse OpenAI JSON", "type": "main", "index": 0 }]] },
-    "Parse OpenAI JSON": { "main": [[{ "node": "Shape Output", "type": "main", "index": 0 }]] }
-  }
+    {
+      "parameters": {
+        "jsCode": "// Entrada esperada: item.json.data = markdown de r.jina.ai, item.json.url (fallback)\nconst md = ($json.data || '').toString();\n\n// 1) Título: preferir \"Title: …\"; fallback a H1 setext (línea + =====) y luego a H1 ATX (# …)\nlet title = null;\nconst mTitle = md.match(/^\\s*Title:\\s*(.+)\\s*$/m);\nif (mTitle) title = mTitle[1].trim();\nif (!title) {\n  const mSetext = md.match(/^\\s*([^\\n]+)\\n=+\\s*$/m); // H1 setext\n  if (mSetext) title = mSetext[1].trim();\n}\nif (!title) {\n  const mAtx = md.match(/^\\s*#\\s+(.+?)\\s*$/m); // H1 ATX\n  if (mAtx) title = mAtx[1].trim();\n}\nif (!title) title = 'Sin título';\n\n// 2) URL: preferir \"URL Source: …\"; fallback al campo url del item si existe\nlet url = ($json.url || '').toString().trim();\nconst mUrl = md.match(/^\\s*URL Source:\\s*(\\S+)\\s*$/m);\nif (mUrl) url = mUrl[1].trim();\n\n// 3) Contenido: si existe el marcador \"Markdown Content:\", cortar desde ahí;\n//    si no, eliminar cabeceras (Title/URL/Published) y también quitar el H1 setext inicial\nlet content;\nconst marker = 'Markdown Content:';\nconst idx = md.indexOf(marker);\nif (idx !== -1) {\n  content = md.slice(idx + marker.length).trim();\n} else {\n  content = md\n    .replace(/^\\s*Title:.*$/m, '')\n    .replace(/^\\s*URL Source:.*$/m, '')\n    .replace(/^\\s*Published Time:.*$/m, '')\n    .trim();\n}\n// Quitar H1 setext al inicio si quedara\ncontent = content.replace(/^\\s*([^\\n]+)\\n=+\\s*\\n?/, '').trim();\n\n// Normalizar y limitar\ncontent = content.replace(/[ \\t]+\\n/g, '\\n').replace(/\\n{3,}/g, '\\n\\n').trim();\nif (content.length > 8000) content = content.slice(0, 8000) + '...';\n\n// 4) Heurística opcional de paywall (puedes omitirla si no te interesa)\nconst paywalled = /member-only|This story is for members|subscribe to.*Medium/i.test(md);\n\n// Salida con las claves pedidas\nreturn [\n  {\n    json: { title, url, content, paywalled }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -640,
+        128
+      ],
+      "id": "2aab6639-db99-464f-ba37-ea8a0a3c952d",
+      "name": "Parse Reader Markdown"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Fetch Medium HTML": {
+      "main": [
+        [
+          {
+            "node": "Parse Reader Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When executed by another node": {
+      "main": [
+        [
+          {
+            "node": "Fetch Medium HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Member-only?": {
+      "main": [
+        [
+          {
+            "node": "Log (member-only)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "OpenAI Chat (JSON)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log (member-only)": {
+      "main": [
+        [
+          {
+            "node": "Shape Output (skip)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat (JSON)": {
+      "main": [
+        [
+          {
+            "node": "Parse OpenAI JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse OpenAI JSON": {
+      "main": [
+        [
+          {
+            "node": "Shape Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Reader Markdown": {
+      "main": [
+        [
+          {
+            "node": "Member-only?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f3df50d5-e716-4331-bb2c-a31e407257d3",
+  "meta": {
+    "instanceId": "a396a459e20e70dadf88b2d8f204762d2d80680fe1414733547fa53f595d718e"
+  },
+  "id": "KRCc0Jm59F6dd23J",
+  "tags": []
 }
