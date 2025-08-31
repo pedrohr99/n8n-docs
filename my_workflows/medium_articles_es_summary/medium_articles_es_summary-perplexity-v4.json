@@ -25,13 +25,17 @@
           ]
         },
         "options": {
-          "timeout": 60000
+          "timeout": 90000,
+          "batchSize": 1,
+          "batchInterval": 1200
         }
       },
       "id": "099eea04-bdc4-4add-acbb-2d7960354425",
       "name": "Fetch Medium HTML",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
+      "retryOnFail": true,
+      "waitBetweenTries": 1500,
       "position": [
         -848,
         128
