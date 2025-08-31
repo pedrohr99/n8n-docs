@@ -1,0 +1,366 @@
+{
+  "name": "medium_daily_digest_summarizer",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9,
+              "triggerAtMinute": 30
+            }
+          ]
+        }
+      },
+      "id": "c71760d0-0a66-4bd1-8964-aa08d2980ec3",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -2880,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 5,
+        "simple": false,
+        "filters": {
+          "q": "newer_than:1d",
+          "sender": "noreply@medium.com"
+        },
+        "options": {}
+      },
+      "id": "e1e16807-fa48-46b2-ac5e-27011dad6480",
+      "name": "Gmail Get Digest",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        -2672,
+        16
+      ],
+      "webhookId": "6c74cb56-ac2f-4ab6-abe0-ab0315d9f2c3",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "viPkNlIYja6xb7WC",
+          "name": "Gmail account pedroh.r99"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const seen = new Set();\nconst filtered = [];\n\nfor (const item of items) {\n  const urls = item.json.urls;\n  if (!urls) continue;\n\n  // Siempre iteramos sobre un array\n  const list = Array.isArray(urls) ? urls : [urls];\n\n  for (let url of list) {\n    if (typeof url !== 'string') continue;\n\n    // descartar enlaces basura\n    if (\n      url.includes('unsubscribe') ||\n      url.includes('help') ||\n      url.includes('privacy')\n    ) continue;\n\n    // solo dominios medium.com con perfil @\n    if (!url.startsWith('https://medium.com/@')) continue;\n\n    // limpiar cola de parámetros (? y ----...)\n    let cleanUrl = url.split('?')[0];           // quita desde la primera ?\n    cleanUrl = cleanUrl.replace(/----.*$/, ''); // quita extras \"----...\"\n\n    // validar que tiene exactamente 3 segmentos tras medium.com\n    const parts = cleanUrl.replace('https://', '').split('/');\n    // [\"medium.com\", \"@usuario\", \"titulo-articulo-id\"]\n    if (parts.length === 3) {\n      if (!seen.has(cleanUrl)) {\n        seen.add(cleanUrl);\n        filtered.push({ json: { url: cleanUrl } });\n      }\n    }\n  }\n}\n\nreturn filtered;"
+      },
+      "id": "df628e92-8ba5-4bda-b02b-626a5db408e5",
+      "name": "Filter & Dedup Links",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        -2000,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "let rawHtml = $json.html;\n\n// Limpiar comillas escapadas y slashes escapados\nlet cleanHtml = rawHtml\n  .replace(/\\\\\"/g, '\"')\n  .replace(/\\\\\\//g, '/');  // convierte https:\\/\\/ en https://\n\n// Devolver como html válido para el siguiente nodo\nreturn {\n  json: {\n    html: cleanHtml\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2464,
+        16
+      ],
+      "id": "50eb35c2-fe67-477b-bfef-d0bc38efe27d",
+      "name": "Clean HTML"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "dataPropertyName": "html",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "urls",
+              "cssSelector": "a",
+              "returnValue": "attribute",
+              "attribute": "href",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        -2256,
+        16
+      ],
+      "id": "d970cfa1-71dc-4c56-b16a-a2388d902fd7",
+      "name": "Extract Medium Links"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "KRCc0Jm59F6dd23J",
+          "mode": "list",
+          "cachedResultName": "medium_articles_es_summary"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        -1792,
+        16
+      ],
+      "id": "8010a296-334d-4976-93da-8a99e5105b44",
+      "name": "Medium ES summary Workflow"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2c2b4036-25af-4b6b-a0ec-ab40d2be185b",
+              "leftValue": "={{ $json.title_translate }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "f454f743-bc5b-4516-8293-231cd4555ac7",
+              "leftValue": "={{ $json.summary_translate }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "848e9c88-e418-4f91-9866-b38d4ada8315",
+              "leftValue": "={{ $json.summary_translate }}",
+              "rightValue": "El modelo no devolvió JSON parseable.",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1584,
+        16
+      ],
+      "id": "3c870e35-7bb7-48a2-bb35-8cfa9ecdd4e3",
+      "name": "Needs Retry?"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -1344,
+        -224
+      ],
+      "id": "05acefe1-16a6-43a5-8e81-21baec69f752",
+      "name": "Wait 3s",
+      "webhookId": "204befdc-50e3-4162-bd89-6837e493ea80"
+    },
+    {
+      "parameters": {
+        "jsCode": "const date = new Date();\nconst today = new Date();\nconst formattedDate = today.toLocaleDateString('es-ES'); // Ej: 30/08/2025\nconst subject = `Resumen Artículos medium.com ${formattedDate}`;\nconst header = `<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"></head>`;\n\n// Resalta \"ATENCIÓN: ...\" hasta fin de texto con estilo minimalista compatible con Gmail\nfunction highlightAttention(text = '') {\n  // Captura \"ATENCIÓN:\" con o sin acento y todo lo que sigue hasta el final (una o varias veces)\n  const re = /(ATENCI[ÓO]N:\\s*.*)$/gim;\n  const attStyle = \"color:#D92D20;font-weight:600;background:#FEF3F2;padding:0 6px;border-radius:6px\";\n  return text.replace(re, (m) => `<span style=\"${attStyle}\">${m}</span>`);\n}\n\nlet html = header + `<body style=\"margin:0;padding:24px;background:#f7f9fc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#101828;\">`;\nhtml += `<div style=\"max-width:720px;margin:0 auto;\">`;\nhtml += `<h1 style=\"margin:0 0 16px 0;font-size:24px;line-height:32px;color:#0B5FFF;\">Medium Daily Digest</h1>`;\nhtml += `<p style=\"margin:0 0 24px 0;font-size:14px;color:#475467;\">Resumen generado automáticamente.</p>`;\n\nfor (const item of items) {\n  const t = item.json.title || 'Untitled';\n  const te = item.json.title_translate || '';\n  const rawSummary = item.json.summary_translate || item.json.summary || item.json.text || '';\n  const s = highlightAttention(rawSummary); // aplicar resaltado\n  const u = item.json.url || '';\n\n  html += `<section style=\"background:#ffffff;border:1px solid #e6ecf1;border-radius:12px;padding:16px;margin:0 0 16px 0;\">`;\n  html += `<h2 style=\"margin:0 0 4px 0;font-size:18px;line-height:26px;color:#0B5FFF;\">${t}</h2>`;\n  html += `<h3 style=\"margin:0 0 8px 0;font-size:15px;line-height:22px;color:#12B76A;font-weight:600;\">${te}</h3>`;\n  html += `<p style=\"margin:0 0 12px 0;font-size:14px;line-height:22px;color:#344054;\">${s}</p>`;\n  html += `<a href=\"${u}\" style=\"display:inline-block;background:#0B5FFF;color:#ffffff;text-decoration:none;padding:8px 12px;border-radius:8px;font-size:14px;font-weight:600;\">Leer en Medium</a>`;\n  html += `</section>`;\n}\n\nhtml += `<p style=\"margin:24px 0 0 0;font-size:12px;color:#98A2B3;\">Enviado por n8n · ${date.toISOString().slice(0,10)}</p>`;\nhtml += `</div></body></html>`;\nreturn [{ json: { subject, html } }];\n"
+      },
+      "id": "7d834fea-e460-4659-be68-90bcb3847b6c",
+      "name": "Assemble HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        -1136,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "pedroh.r99@gmail.com",
+        "subject": "={{$json.subject}}",
+        "message": "={{$json.html}}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "3d455e23-5a37-43b4-801c-eff4ce38543e",
+      "name": "Gmail Send Digest",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        -880,
+        32
+      ],
+      "webhookId": "83351bd1-663c-440e-a1f1-58e2f0c4228f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "viPkNlIYja6xb7WC",
+          "name": "Gmail account pedroh.r99"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Gmail Get Digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Get Digest": {
+      "main": [
+        [
+          {
+            "node": "Clean HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter & Dedup Links": {
+      "main": [
+        [
+          {
+            "node": "Medium ES summary Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean HTML": {
+      "main": [
+        [
+          {
+            "node": "Extract Medium Links",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Medium Links": {
+      "main": [
+        [
+          {
+            "node": "Filter & Dedup Links",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Medium ES summary Workflow": {
+      "main": [
+        [
+          {
+            "node": "Needs Retry?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Needs Retry?": {
+      "main": [
+        [
+          {
+            "node": "Wait 3s",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Assemble HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 3s": {
+      "main": [
+        [
+          {
+            "node": "Medium ES summary Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assemble HTML": {
+      "main": [
+        [
+          {
+            "node": "Gmail Send Digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "dc650226-8807-477e-b959-8a357f293c2c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a396a459e20e70dadf88b2d8f204762d2d80680fe1414733547fa53f595d718e"
+  },
+  "id": "esswZCIYhnb05I1S",
+  "tags": [
+    {
+      "createdAt": "2025-08-28T14:38:43.090Z",
+      "updatedAt": "2025-08-28T14:38:43.090Z",
+      "id": "HMsT9ybSy7vtmctn",
+      "name": "Medium Automation"
+    }
+  ]
+}

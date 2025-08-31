@@ -1,0 +1,209 @@
+{
+  "name": "medium_articles_es_summary",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "d4ec5f2b-adeb-4f6c-90e7-b0c071ac659f",
+      "name": "When executed by another node",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -1664,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "url": "={{ 'https://r.jina.ai/http://' + $json['url'].replace('https://','').replace('http://','') }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+            }
+          ]
+        },
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 3000
+            }
+          },
+          "timeout": 90000
+        }
+      },
+      "id": "ae811f8f-76dd-4cd4-8c24-b0f992995c4d",
+      "name": "Fetch Medium HTML",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "retryOnFail": true,
+      "waitBetweenTries": 1500,
+      "position": [
+        -1456,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({\n  model: \"gpt-5-mini\",\n  temperature: 1.0,\n  reasoning_effort: \"low\",\n  response_format: { type: \"json_object\" },\n  messages: [\n    {\n      role: \"system\",\n      content: \"Eres un redactor técnico y respondes SOLO JSON válido.\"\n    },\n    {\n      role: \"user\",\n      content: $json.paywalled ? \n        // CASO: Artículo con paywall (contenido limitado)\n        \"Título original: \" + $json.title + \"\\n\" +\n        \"URL: \" + $json.url + \"\\n\" +\n        \"Estado: Contenido limitado (requiere suscripción)\\n\" +\n        \"Contenido disponible:\\n\" + $json.content + \"\\n\\n\" +\n        \"IMPORTANTE: Este artículo tiene contenido limitado. Basándote en el título y el contenido parcial disponible, genera una traducción y resumen apropiado.\\n\\n\" +\n        \"Devuelve SOLO este objeto JSON:\\n\" +\n        \"{\\\"title_translate\\\":\\\"título en español natural (máx. 90 caracteres)\\\",\\\"summary_translate\\\":\\\"resumen en español indicando que el contenido está limitado por suscripción, 2-3 frases. Al final SIEMPRE añade: ATENCIÓN: Resumen limitado por falta de login\\\"}\"\n        :\n        // CASO: Artículo completo (sin paywall)\n        \"Título original: \" + $json.title + \"\\n\" +\n        \"URL: \" + $json.url + \"\\n\" +\n        \"Estado: Contenido completo disponible\\n\" +\n        \"Contenido:\\n\" + $json.content + \"\\n\\n\" +\n        \"Devuelve SOLO este objeto JSON:\\n\" +\n        \"{\\\"title_translate\\\":\\\"título en español natural (máx. 90 caracteres)\\\",\\\"summary_translate\\\":\\\"resumen claro en español del contenido completo, 2-3 frases sencillas\\\"}\"\n    }\n  ],\n  max_completion_tokens: 1024\n}) }}\n",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "8bc09e9f-de57-4a70-a1c0-6eb7b005133f",
+      "name": "OpenAI Chat (JSON)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1024,
+        0
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "FvAf0CGYFlHBPNBX",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Procesar todos los items de entrada\nconst results = [];\nconst parseReaderItems = $('Parse Reader Markdown').all();\n\n// Iterar por todos los items recibidos de OpenAI\nfor (let i = 0; i < items.length; i++) {\n  const item = items[i];\n  \n  // 1) Leer el string JSON devuelto por Chat Completions\n  const raw = item.json?.choices?.[0]?.message?.content ?? \"{}\";\n  \n  // 2) Parsear con tolerancia a errores\n  let data;\n  try {\n    data = JSON.parse(raw);\n  } catch {\n    data = {\n      title_translate: \"Salida no válida\",\n      summary_translate: \"El modelo no devolvió JSON parseable.\"\n    };\n  }\n  \n  // 3) Recuperar título y URL del nodo anterior correspondiente al mismo índice\n  const prev = parseReaderItems[i]?.json || {};\n  const title = prev.title ?? \"\";\n  const url = prev.url ?? \"\";\n  \n  // 4) Crear el resultado para este item\n  results.push({\n    json: {\n      title,\n      title_translate: data.title_translate ?? \"\",\n      summary_translate: data.summary_translate ?? \"\",\n      url\n    }\n  });\n}\n\n// 5) Devolver todos los resultados\nreturn results;\n"
+      },
+      "id": "bf8e9e73-3353-4ef8-8b40-98c9a8ac465e",
+      "name": "Parse OpenAI JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -816,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "title",
+              "type": "string",
+              "value": "={{$json.title}}"
+            },
+            {
+              "name": "title_translate",
+              "type": "string",
+              "value": "={{$json.title_translate}}"
+            },
+            {
+              "name": "summary_translate",
+              "type": "string",
+              "value": "={{$json.summary_translate}}"
+            },
+            {
+              "name": "url",
+              "type": "string",
+              "value": "={{$json.url}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "80e4f082-69d5-482f-93c4-76c9de559271",
+      "name": "Shape Output",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -624,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Procesa todos los items de entrada y devuelve uno por cada URL\nconst out = items.map((item) => {\n  const md = (item.json?.data || '').toString();\n  \n  // 1) Título\n  let title = null;\n  let m = md.match(/^\\s*Title:\\s*(.+)\\s*$/m);\n  if (m) title = m[1].trim();\n  if (!title) {\n    m = md.match(/^\\s*([^\\n]+)\\n=+\\s*$/m); // H1 setext\n    if (m) title = m[1].trim();\n  }\n  if (!title) {\n    m = md.match(/^\\s*#\\s+(.+?)\\s*$/m); // H1 ATX\n    if (m) title = m[1].trim();\n  }\n  if (!title) title = 'Sin título';\n  \n  // 2) URL - Primero intenta extraer de enlaces Sign in, si no, usa URL Source\n  let url = (item.json?.url || '').toString().trim();\n  \n  // Buscar enlaces de Sign in con redirect\n  const signInMatch = md.match(/\\[Sign in\\]\\(http:\\/\\/medium\\.com\\/m\\/signin\\?operation=login&redirect=([^)]+)\\)/);\n  if (signInMatch) {\n    // Decodificar la URL del parámetro redirect\n    const encodedUrl = signInMatch[1];\n    url = decodeURIComponent(encodedUrl);\n    \n    // Limpiar parámetros después de &source=post_page\n    const sourceIndex = url.indexOf('&source=post_page');\n    if (sourceIndex !== -1) {\n      url = url.substring(0, sourceIndex);\n    }\n  } else {\n    // Si no hay Sign in link, usar URL Source como fallback\n    m = md.match(/^\\s*URL Source:\\s*(\\S+)\\s*$/m);\n    if (m) url = m[1].trim();\n  }\n  \n  // 3) Cuerpo\n  const marker = 'Markdown Content:';\n  const idx = md.indexOf(marker);\n  let content = (idx !== -1)\n    ? md.slice(idx + marker.length).trim()\n    : md\n        .replace(/^\\s*Title:.*$/m, '')\n        .replace(/^\\s*URL Source:.*$/m, '')\n        .replace(/^\\s*Published Time:.*$/m, '')\n        .trim();\n        \n  // Limpiar posibles H1 setext inicial y normalizar saltos\n  content = content.replace(/^\\s*([^\\n]+)\\n=+\\s*\\n?/, '').trim();\n  content = content.replace(/[ \\t]+\\n/g, '\\n').replace(/\\n{3,}/g, '\\n\\n').trim();\n  if (content.length > 8000) content = content.slice(0, 8000) + '...';\n  \n  // 4) Heurística de paywall\n  const paywalled = /member-only|This story is for members|subscribe to.*Medium/i.test(md);\n  \n  return { json: { title, url, content, paywalled } };\n});\n\nreturn out;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1248,
+        0
+      ],
+      "id": "1b818eb6-04da-436e-b606-623706f7fe9f",
+      "name": "Parse Reader Markdown"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Fetch Medium HTML": {
+      "main": [
+        [
+          {
+            "node": "Parse Reader Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When executed by another node": {
+      "main": [
+        [
+          {
+            "node": "Fetch Medium HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat (JSON)": {
+      "main": [
+        [
+          {
+            "node": "Parse OpenAI JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse OpenAI JSON": {
+      "main": [
+        [
+          {
+            "node": "Shape Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Reader Markdown": {
+      "main": [
+        [
+          {
+            "node": "OpenAI Chat (JSON)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7a4a7ec9-7c07-4550-9f43-de70a3d268ed",
+  "meta": {
+    "instanceId": "a396a459e20e70dadf88b2d8f204762d2d80680fe1414733547fa53f595d718e"
+  },
+  "id": "KRCc0Jm59F6dd23J",
+  "tags": []
+}
