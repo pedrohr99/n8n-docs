@@ -1,283 +1,148 @@
+# Medium Daily Digest Summarizer — Updated README
 
-# Medium Daily Digest Summarizer - n8n Workflow
+## What it does
 
-This n8n workflow automatically processes Medium Daily Digest emails, extracts article links, summarizes each article, and saves the results as a markdown file to Google Drive.
+- Runs daily at 09:30 (workflow timezone), fetches the latest Medium Daily Digest from Gmail, extracts article links, calls a child workflow to summarize them in Spanish, and sends a clean HTML email with titles, summaries, and a “Read on Medium” button.
+- Implements strict Medium URL cleaning/deduplication, paywall-aware handling with a user warning, automatic retry if the model doesn’t return valid JSON, and visual “ATENCIÓN:” highlighting in the email body for limited-content cases.
 
-## Features
+## Key changes vs prior version
 
-- **Scheduled Execution**: Runs daily at 09:30 Europe/Madrid timezone
-- **Email Processing**: Fetches the latest Medium Daily Digest from `noreply@medium.com`
-- **Link Extraction**: Automatically extracts Medium article URLs from email HTML
-- **Content Summarization**: Fetches each article and creates 2-3 sentence summaries
-- **Markdown Generation**: Creates a formatted markdown file with titles, summaries, and links
-- **Google Drive Integration**: Saves files to a "medium_com" folder with date-stamped filenames
-- **Error Handling**: Includes comprehensive error handling and notifications
-- **Rate Limiting**: Implements delays between article fetches to avoid being blocked
+- Replaced “generate Markdown + upload to Google Drive” with “generate HTML + send via Gmail” for instant delivery and better mobile/desktop reading.
+- Added visual warning highlighting via highlightAttention during HTML assembly, styling any “ATENCIÓN: …” in the translated summary for maximum visibility in Gmail.
+- Modular architecture with child workflow medium_articles_es_summary that encapsulates fetch, parse, and strict JSON summarization, with paywall heuristics and batching/timeout for robustness.
 
 ## Prerequisites
 
-Before importing this workflow, ensure you have:
-
-1. **n8n Instance**: Self-hosted n8n running via Docker on Mac (or any other setup)
-2. **Gmail Access**: OAuth credentials configured for Gmail API access
-3. **Google Drive Access**: OAuth credentials configured for Google Drive API access
-4. **Medium Daily Digest Subscription**: Ensure you're subscribed to Medium's Daily Digest emails
-
-## Installation Instructions
-
-### Step 1: Import the Workflow
-
-1. Open your n8n instance in a web browser
-2. Click on "Workflows" in the left sidebar
-3. Click the "+" button to create a new workflow
-4. Click on the three dots menu (⋯) in the top right
-5. Select "Import from File" or "Import from URL"
-6. Upload the `medium_daily_digest_summarizer.json` file
-7. The workflow will be imported with all nodes and connections
-
-### Step 2: Configure Gmail Credentials
-
-1. In the n8n interface, go to "Settings" → "Credentials"
-2. Click "Create New Credential"
-3. Select "Gmail OAuth2 API"
-4. Follow these steps:
-   - Go to [Google Cloud Console](https://console.cloud.google.com/)
-   - Create a new project or select an existing one
-   - Enable the Gmail API
-   - Create OAuth 2.0 credentials (Web application)
-   - Add your n8n instance URL to authorized redirect URIs (e.g., `http://localhost:5678/rest/oauth2-credential/callback`)
-   - Copy the Client ID and Client Secret to n8n
-   - Complete the OAuth flow by clicking "Connect my account"
-
-### Step 3: Configure Google Drive Credentials
-
-1. In n8n, create another new credential
-2. Select "Google Drive OAuth2 API"
-3. Follow similar steps as Gmail:
-   - In Google Cloud Console, enable the Google Drive API
-   - Use the same OAuth 2.0 credentials or create new ones
-   - Add the Client ID and Client Secret to n8n
-   - Complete the OAuth flow
-
-### Step 4: Set Up Google Drive Folder
-
-1. In your Google Drive, create a folder named "medium_com"
-2. Right-click the folder and select "Share"
-3. Copy the folder ID from the URL (the long string after `/folders/`)
-4. In the n8n workflow, find the "Upload to Google Drive" node
-5. Replace "medium_com" in the `parentIds` parameter with your actual folder ID
-
-**Alternative**: You can also use the folder name "medium_com" directly if you prefer, but using the folder ID is more reliable.
-
-### Step 5: Configure Email Settings (Optional)
-
-The workflow is pre-configured to look for emails from `noreply@medium.com` to `pedroh.r99@gmail.com`. To customize:
-
-1. Open the "Fetch Medium Digest" node
-2. Modify the query in the filters section:
-
-   ```text
-   from:noreply@medium.com to:your-email@gmail.com subject:"Daily Digest" is:unread
-   ```
-
-3. Replace `your-email@gmail.com` with your actual email address
-
-### Step 6: Test the Workflow
-
-1. Before activating the schedule, test the workflow manually:
-   - Click on the "Daily Schedule" node
-   - Click "Execute Node" to run a test
-   - Check each node's output to ensure everything works correctly
-
-2. If you don't have a recent Medium Daily Digest email:
-   - Temporarily modify the Gmail query to remove `is:unread` and `receivedAfter` filters
-   - Test with an older digest email
-   - Remember to restore the original filters afterward
-
-### Step 7: Activate the Workflow
-
-1. Once testing is successful, activate the workflow:
-   - Toggle the "Active" switch in the top right corner
-   - The workflow will now run automatically at 09:30 Europe/Madrid time daily
-
-## Workflow Components Explained
-
-### 1. Daily Schedule (Schedule Trigger)
-
-- **Cron Expression**: `30 9 * * *` (09:30 daily)
-- **Timezone**: Europe/Madrid
-- Triggers the entire workflow automatically
-
-### 2. Fetch Medium Digest (Gmail Node)
-
-- Searches for the latest unread Medium Daily Digest email
-- Filters by sender, recipient, and date
-- Returns full email content including HTML
-
-### 3. Check Email Exists (IF Node)
-
-- Validates that an email was found
-- Branches workflow execution based on result
-
-### 4. Extract Article Links (Code Node)
-
-- Parses HTML content from the email
-- Uses regex to find Medium article URLs
-- Filters out non-article links (profiles, topics, etc.)
-- Limits to 10 articles to prevent rate limiting
-
-### 5. Process Articles One by One (Split in Batches)
-
-- Processes articles sequentially to avoid overwhelming servers
-- Batch size of 1 ensures proper rate limiting
-
-### 6. Fetch Article Content (HTTP Request)
-
-- Retrieves full HTML content of each article
-- Includes proper headers to avoid blocking
-- Has retry logic for failed requests
-
-### 7. Rate Limit Wait (Wait Node)
-
-- Adds a 1-minute delay between article fetches
-- Prevents being blocked by Medium's servers
-
-### 8. Extract Title & Summarize (Code Node)
-
-- Extracts article title from HTML
-- Removes Medium branding from titles
-- Extracts article content and creates summaries
-- Handles various HTML structures and edge cases
-
-### 9. Collect All Articles (Aggregate Node)
-
-- Combines all processed articles into a single data structure
-- Prepares data for markdown generation
-
-### 10. Create Markdown File (Code Node)
-
-- Generates formatted markdown with all articles
-- Includes titles, summaries, links, and metadata
-- Creates date-stamped filename
-
-### 11. Upload to Google Drive (Google Drive Node)
-
-- Uploads the markdown file to the specified folder
-- Uses the configured Google Drive credentials
-
-### 12. Success/Error Notifications (NoOp Nodes)
-
-- Provides feedback on workflow execution
-- Can be replaced with actual notification nodes (email, Slack, etc.)
-
-## Customization Options
-
-### Change Schedule
-
-To modify when the workflow runs:
-
-1. Edit the "Daily Schedule" node
-2. Change the cron expression:
-   - `0 8 * * *` for 08:00 daily
-   - `30 18 * * 1-5` for 18:30 on weekdays only
-   - `0 9 * * 0` for 09:00 on Sundays only
-
-### Modify Summary Length
-
-In the "Extract Title & Summarize" node, adjust the summary logic:
-
-- Change `sentences.slice(0, 3)` to `sentences.slice(0, 2)` for shorter summaries
-- Modify the character limit from 200 to your preferred length
-
-### Add AI-Powered Summaries
-
-For better summaries, you can integrate with OpenAI:
-
-1. Add an OpenAI credential to n8n
-2. Replace the summary logic in "Extract Title & Summarize" with an OpenAI API call
-3. Use a prompt like: "Summarize this article in 2-3 sentences: [article content]"
-
-### Change Output Format
-
-To generate different file formats:
-
-- **CSV**: Replace the markdown generation with CSV formatting
-- **JSON**: Output the articles array directly as JSON
-- **HTML**: Create an HTML report instead of markdown
-
-### Add Email Notifications
-
-Replace the NoOp notification nodes with actual email nodes:
-
-1. Add a "Send Email" node after success/error
-2. Configure with your email credentials
-3. Send summary reports or error alerts
-
-## Troubleshooting
-
-### Common Issues
-
-#### 1. No emails found
-
-- Check that you're subscribed to Medium Daily Digest
-- Verify the email address in the Gmail query
-- Ensure emails aren't being filtered to spam
-
-#### 2. Articles not loading
-
-- Some articles may be behind paywalls
-- Rate limiting may be too aggressive - increase wait times
-- Check if Medium has blocked the requests
-
-#### 3. Google Drive upload fails
-
-- Verify folder permissions and ID
-- Check Google Drive API quotas
-- Ensure OAuth credentials are valid
-
-#### 4. Workflow doesn't run on schedule
-
-- Check n8n timezone settings
-- Verify the cron expression
-- Ensure the workflow is activated
-
-### Debug Mode
-
-To debug issues:
-
-1. Run the workflow manually node by node
-2. Check the execution log for each node
-3. Use the "Pin Data" feature to test with sample data
-4. Enable verbose logging in n8n settings
-
-### Performance Optimization
-
-- Reduce the number of articles processed (change limit in Extract Links node)
-- Increase wait times if getting blocked
-- Use webhook triggers instead of polling for better performance
-
-## Security Considerations
-
-- **Credentials**: Never share your OAuth credentials or workflow exports containing them
-- **Rate Limiting**: Respect Medium's servers by not reducing wait times too much
-- **Data Privacy**: Be mindful of what data you're processing and storing
-- **Access Control**: Limit Google Drive folder access to necessary users only
-
-## Support and Updates
-
-This workflow was created for n8n version 1.x. For updates or issues:
-
-1. Check the n8n community forum for similar workflows
-2. Review n8n documentation for node updates
-3. Test thoroughly after any n8n version upgrades
-4. Consider backing up your workflow configurations regularly
-
-## License
-
-This workflow is provided as-is for educational and personal use. Please respect Medium's terms of service and rate limits when using this automation.
-
----
-
-**Created**: January 2025
-**n8n Version**: 1.x
-**Last Updated**: January 2025
+- n8n 1.x running (Cloud or self‑hosted/Docker) and correct workflow timezone if different from the global instance setting.
+- Gmail OAuth2 credentials configured in n8n to read and send emails with the same account.
+- OpenAI credential configured in n8n for the child workflow (chat completions with JSON-only response).
+- Subscription to Medium Daily Digest and delivery from <noreply@medium.com>.
+
+## Installation
+
+- Import medium_daily_digest_summarizer-v1.json and medium_articles_es_summary-v1.json into n8n and save both workflows.
+- In the parent workflow, select Gmail credentials on “Gmail Get Digest” and “Gmail Send Digest,” and keep or adjust the “Schedule Trigger” to the desired time (JSON ships with 09:30).
+- In the child workflow, select the OpenAI credential on “OpenAI Chat (JSON)” and test with a sample Medium URL to verify parsing/summarization.
+
+## Architecture
+
+- Schedule Trigger → Gmail Get Digest → Clean HTML → Extract Medium Links → Filter & Dedup Links → Execute Sub‑workflow → Needs Retry? → (True: Wait 3s → Execute Sub‑workflow) → Assemble HTML → Gmail Send Digest.
+- Child workflow: Execute Workflow Trigger → Fetch Medium HTML → Parse Reader Markdown → OpenAI Chat (JSON) → Parse OpenAI JSON → Shape Output → returns title/title_translate/summary_translate/url.
+
+## Nodes and config (parent)
+
+- Schedule Trigger: runs daily at 09:30; actual timezone is the workflow’s (falls back to instance timezone if unset).
+- Gmail Get Digest: operation getAll, limit 5, simple=false, filters q: “newer_than:1d”, sender: “<noreply@medium.com>” to retrieve the digest’s full HTML.
+- Clean HTML (Code): unescapes quotes and slashes so CSS extraction works reliably.
+- Extract Medium Links (HTML): operation extractHtmlContent, dataPropertyName=html, extracts all `<a href>` into “urls” as an array.
+- Filter & Dedup Links (Code): removes unsubscribe/help/privacy links, enforces domain “<https://medium.com/@…”>, strips query params “?” and “----…” suffixes, and deduplicates keeping only 3‑segment paths.
+- Execute Sub‑workflow: calls medium_articles_es_summary and waits for a response per URL (waitForSubWorkflow=true), retrieving original title, Spanish title, Spanish summary, and URL; a downstream retry handles missing data.
+- Needs Retry? (IF): retries when title_translate is empty, summary_translate is empty, or summary_translate equals “El modelo no devolvió JSON parseable.”, using OR combinator.
+- Wait 3s: short pause before re‑calling the child workflow on the same item, to mitigate transient HTTP/model issues.
+- Assemble HTML (Code): builds a minimal responsive email with h1/h2/h3, “Read on Medium” button, and highlightAttention to style any “ATENCIÓN: …” in the summary.
+- Gmail Send Digest: sends the HTML email to the configured recipient with the subject and html built in the prior step, without extra attribution.
+
+## Nodes and config (child)
+
+- When executed by another node: exposes the child workflow to be invoked by the parent and receive the URL.
+- Fetch Medium HTML (HTTP Request): fetches Reader view via r.jina.ai/http://{host/path}, sets a normal browser User‑Agent, batching 1 item every 3s with 90s timeout for stability.
+- Parse Reader Markdown (Code): extracts Title, prefers canonical URL via the “Sign in” redirect (decoded) or falls back to “URL Source,” slices out “Markdown Content,” normalizes spacing, and flags paywalled content via heuristics.
+- OpenAI Chat (JSON) (HTTP Request): calls /v1/chat/completions with model “gpt-5-mini”, response_format json_object, and a conditional prompt: when paywalled, it enforces a warning suffix “ATENCIÓN: Resumen limitado por falta de login”.
+- Parse OpenAI JSON (Code): parses choices.message.content into an object; on failure, sets “El modelo no devolvió JSON parseable.” and re‑combines title/URL by index from the prior parse step.
+- Shape Output (Set): outputs title, title_translate, summary_translate, url as flat fields for consumption by the parent.
+
+## Design rationale
+
+- Separation of concerns: parent handles email, extraction, and delivery; child encapsulates scraping, parsing, and summarization, enabling easier testing and scaling without breaking the main flow.
+- Digest HTML resilience: pre‑cleaning HTML plus CSS selector extraction reduces dependency on email markup quirks and avoids ad‑hoc decoding in downstream nodes.
+- Canonical, noise‑free URLs: enforcing “<https://medium.com/@…”> and stripping tracking/extra parts ensures the child receives valid post URLs and avoids duplicate/model waste.
+- Paywall‑aware summaries: when content is limited, the child returns a prudent Spanish summary with an explicit “ATENCIÓN” suffix, which is later visually highlighted in the email.
+- Bounded retries: validating empty/invalid JSON fields with a short wait prevents infinite loops and reduces API pressure while recovering from transient failures.
+
+## How to run
+
+1) Import both JSONs and assign credentials: Gmail in the two parent nodes and OpenAI in the child.
+2) Adjust Gmail Get Digest filters (e.g., different sender/time window or higher “limit”) and the final recipient in Gmail Send Digest.
+3) Manually execute the parent to validate the end‑to‑end path with a recent digest and preview the HTML output before enabling the schedule.
+4) Activate the workflow and confirm the timezone is configured so the trigger fires at 09:30 local time as intended.
+
+## Customization
+
+- Timing/frequency: change “Schedule Trigger” to another time or weekdays/weekends pattern.
+- Number of articles: tweak Gmail Get Digest limit or shrink after “Filter & Dedup Links” to control the volume.
+- Recipients: adjust “sendTo” in Gmail Send Digest for teams, lists, or aliases.
+- Email style: modify fonts/colors/button and the highlightAttention function to match brand and warning emphasis.
+- Model/tone: in the child, swap models or refine JSON instructions to alter length or style of the Spanish summary.
+
+## Handy snippets
+
+- Gmail Get Digest filters:
+
+```json
+{
+  "node": "Gmail Get Digest",
+  "parameters": {
+    "operation": "getAll",
+    "limit": 5,
+    "simple": false,
+    "filters": { "q": "newer_than:1d", "sender": "noreply@medium.com" }
+  }
+}
+```
+
+- Medium link cleanup/dedup:
+
+```js
+// Keep only https://medium.com/@... and drop tracking/extra parts
+if (!url.startsWith('https://medium.com/@')) continue;
+let cleanUrl = url.split('?');
+cleanUrl = cleanUrl.replace(/----.*$/, '');
+const parts = cleanUrl.replace('https://', '').split('/');
+if (parts.length === 3) /* push unique cleanUrl */;
+```
+
+- Visual “ATENCIÓN:” highlighting in email:
+
+```js
+function highlightAttention(text = '') {
+  const re = /(ATENCI[ÓO]N:\s*.*)$/gim;
+  const attStyle = "color:#D92D20;font-weight:600;background:#FEF3F2;padding:0 6px;border-radius:6px";
+  return text.replace(re, (m) => `<span style="${attStyle}">${m}</span>`);
+}
+```
+
+- Child prompt (paywalled branch):
+
+```json
+{
+  "response_format": {"type": "json_object"},
+  "messages": [
+    {"role": "system", "content": "Eres un redactor técnico y respondes SOLO JSON válido."},
+    {"role": "user", "content": "... Devuelve SOLO este objeto JSON: {\"title_translate\":\"…\",\"summary_translate\":\"… Al final SIEMPRE añade: ATENCIÓN: Resumen limitado por falta de login\"}"}
+  ]
+}
+```
+
+## Common issues and fixes
+
+- “No digest emails found”: verify subscription, Gmail Get Digest filters, and that a digest arrived in the last 24h; temporarily widen the window/limit for testing.
+- “Empty summary_translate or invalid JSON”: automatic retry kicks in; if it persists, check the child’s OpenAI credential/model or increase HTTP timeout/waits between items.
+- “Paywalled with too little text”: the child returns a cautious summary with “ATENCIÓN,” by design; to improve, raise batchInterval/timeout or alter the extraction source.
+- “Email sent but no styles”: ensure Gmail Send Digest uses message=html and that Assemble HTML returns a properly formed html field.
+
+## Best practices used
+
+- CSS extraction with pre‑sanitized HTML to minimize markup brittleness from email bodies.
+- URL cleanup/dedup before hitting the model to save tokens and avoid duplicates.
+- Child workflow returns strict JSON with defensive parsing to absorb occasional model deviations.
+- Batching + intervals + realistic timeouts to avoid blocking when fetching articles.
+
+## Activation and maintenance
+
+- Activate the parent workflow after manual tests and monitor initial runs to confirm article volume and proper email rendering.
+- Version changes to Code nodes and child prompts, and document filter/schedule edits in workflow history for traceability.
+
+## Credits and compatibility
+
+- Designed for n8n 1.x, using core nodes (Gmail/HTTP/HTML/IF/Wait/Code) and a child workflow that calls OpenAI via HTTP Request—no community nodes required.
+- The previous README is updated to reflect Gmail HTML sending instead of Drive file creation, while keeping the daily schedule and Medium digest concept intact.
