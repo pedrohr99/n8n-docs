@@ -1,5 +1,4 @@
 ---
-#https://www.notion.so/n8n/Frontmatter-432c2b8dff1f43d4b1c8d20075510fe4
 title: AWS credentials
 description: Documentation for AWS credentials. Use these credentials to authenticate AWS in n8n, a workflow automation platform.
 contentType: [integration, reference]
@@ -16,6 +15,7 @@ You can use these credentials to authenticate the following nodes:
 - [AWS Comprehend](/integrations/builtin/app-nodes/n8n-nodes-base.awscomprehend.md)
 - [AWS DynamoDB](/integrations/builtin/app-nodes/n8n-nodes-base.awsdynamodb.md)
 - [AWS Elastic Load Balancing](/integrations/builtin/app-nodes/n8n-nodes-base.awselb.md)
+- [AWS IAM](/integrations/builtin/app-nodes/n8n-nodes-base.awsiam.md)
 - [AWS Lambda](/integrations/builtin/app-nodes/n8n-nodes-base.awslambda.md)
 - [AWS Rekognition](/integrations/builtin/app-nodes/n8n-nodes-base.awsrekognition.md)
 - [AWS S3](/integrations/builtin/app-nodes/n8n-nodes-base.awss3.md)

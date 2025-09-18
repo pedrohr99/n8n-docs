@@ -1,5 +1,4 @@
 ---
-#https://www.notion.so/n8n/Frontmatter-432c2b8dff1f43d4b1c8d20075510fe4
 title: Google Service Account
 description: Documentation for service account Google credentials. Use these credentials to authenticate Google in n8n, a workflow automation platform.
 contentType: [integration, reference]
@@ -78,15 +77,21 @@ With the Google project and credentials fully configured, finish the n8n credent
 
 ## Video
 
-The following video demonstrates the steps described above.
-
 <div class="video-container">
-<iframe width="840" height="472.5" src="https://www.youtube.com/embed/ArXVlpo3y1k" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<iframe width="840" height="472.5" src="https://www.youtube.com/embed/FzQzGODb5Gk?si=YR9vDaTet8vsj-y2" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </div>
 
 ## Troubleshooting
 
 ### Service Account can't access Google Drive files
+
+<!-- vale from-microsoft.FirstPerson = NO -->
+/// danger | No access to my drive
+Google no longer allows Service Accounts created after April 15, 2025 to access `my drive`. Service Accounts now only have access to shared drives.
+
+While not recommended, if you need to use a Service Account to access `my drive`, you can do so by [enabling domain-wide delegation](#enable-domain-wide-delegation). You can learn more in [this post in the community](https://community.n8n.io/t/please-please-help-upload-file-google-drive-node-with-service-account-not-working/147750/15).
+///
+<!-- vale from-microsoft.FirstPerson = YES -->
 
 A Service Account can't access Google Drive files and folders that weren't shared with its associated user email.
 

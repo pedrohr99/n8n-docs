@@ -1,5 +1,4 @@
 ---
-#https://www.notion.so/n8n/Frontmatter-432c2b8dff1f43d4b1c8d20075510fe4
 title: Release notes
 description: Release notes detailing new features and bug fixes for n8n.
 tags:
@@ -35,10 +34,241 @@ You can find the release notes for older versions of n8n [here](/release-notes/0
 
 
 
+## n8n@1.112.1
+
+View the [commits](https://github.com/n8n-io/n8n/compare/n8n@1.112.0...n8n@1.112.1) for this version.<br />
+**Release date:** 2025-09-17
+
+This release contains bug fixes.
+
+For full release details, refer to [Releases](https://github.com/n8n-io/n8n/releases) on GitHub.
+
+
+
+## n8n@1.112.0
+
+View the [commits](https://github.com/n8n-io/n8n/compare/n8n@1.111.0...n8n@1.112.0) for this version.<br />
+**Release date:** 2025-09-15
+
+/// note | Next version
+This is the `next` version. n8n recommends using the `latest` version. The `next` version may be unstable. To report issues, use the [forum](https://community.n8n.io/c/questions/12).
+///
+
+This release contains API improvements, core updates, editor improvements, node updates, and bug fixes.
+
+### Contributors
+
+[GuraaseesSingh](https://github.com/GuraaseesSingh)  
+[jabbson](https://github.com/jabbson)  
+[ongdisheng](https://github.com/ongdisheng)  
+
+For full release details, refer to [Releases](https://github.com/n8n-io/n8n/releases) on GitHub.
+
+
+
+## n8n@1.111.0
+
+View the [commits](https://github.com/n8n-io/n8n/compare/n8n@1.110.0...n8n@1.111.0) for this version.<br />
+**Release date:** 2025-09-08
+
+/// note | Latest version
+This is the `latest` version. n8n recommends using the `latest` version. The `next` version may be unstable. To report issues, use the [forum](https://community.n8n.io/c/questions/12).
+///
+
+
+
+This release contains core updates, API improvements, node updates, and bug fixes.
+
+### Contributors
+
+[abellion](https://github.com/abellion)  
+[cesars-gh](https://github.com/cesars-gh)  
+[durran](https://github.com/durran)  
+
+For full release details, refer to [Releases](https://github.com/n8n-io/n8n/releases) on GitHub.
+
+
+
+## n8n@1.110.1
+
+View the [commits](https://github.com/n8n-io/n8n/compare/n8n@1.110.0...n8n@1.110.1) for this version.<br />
+**Release date:** 2025-09-03
+
+
+
+
+
+This release contains bug fixes.
+
+For full release details, refer to [Releases](https://github.com/n8n-io/n8n/releases) on GitHub.
+
+
+## n8n@1.109.2
+
+View the [commits](https://github.com/n8n-io/n8n/compare/n8n@1.109.1...n8n@1.109.2) for this version.<br />
+**Release date:** 2025-09-03
+
+
+
+This release contains bug fixes.
+
+For full release details, refer to [Releases](https://github.com/n8n-io/n8n/releases) on GitHub.
+
+
+
+## n8n@1.110.0
+
+View the [commits](https://github.com/n8n-io/n8n/compare/n8n@1.109.0...n8n@1.110.0) for this version.<br />
+**Release date:** 2025-09-01
+
+
+
+This release contains core updates, editor improvements, node updates, performance improvements, and bug fixes.
+
+### Contributors
+
+[heyxmirko](https://github.com/heyxmirko)  
+
+For full release details, refer to [Releases](https://github.com/n8n-io/n8n/releases) on GitHub.
+
+
+
+## n8n@1.109.1
+
+View the [commits](https://github.com/n8n-io/n8n/compare/n8n@1.109.0...n8n@1.109.1) for this version.<br />
+**Release date:** 2025-08-27
+
+
+
+
+
+This release contains a bug fix.
+
+For full release details, refer to [Releases](https://github.com/n8n-io/n8n/releases) on GitHub.
+
+
+
+## n8n@1.108.2
+
+View the [commits](https://github.com/n8n-io/n8n/compare/n8n@1.108.1...n8n@1.108.2) for this version.<br />
+**Release date:** 2025-08-27
+
+
+
+
+
+This release contains a bug fix.
+
+For full release details, refer to [Releases](https://github.com/n8n-io/n8n/releases) on GitHub.
+
+
+
+## n8n@1.109.0
+
+View the [commits](https://github.com/n8n-io/n8n/compare/n8n@1.108.0...n8n@1.109.0) for this version.<br />
+**Release date:** 2025-08-25
+
+
+
+
+
+This release contains core updates, editor improvements, node updates, performance improvements, and bug fixes.
+
+### Contributors
+
+[naXa777](https://github.com/naXa777)  
+[prettycode2022](https://github.com/prettycode2022)  
+[oppai](https://github.com/oppai)  
+
+For full release details, refer to [Releases](https://github.com/n8n-io/n8n/releases) on GitHub.
+
+
+
+## n8n@1.107.4
+
+View the [commits](https://github.com/n8n-io/n8n/compare/n8n@1.107.3...n8n@1.107.4) for this version.<br />
+**Release date:** 2025-08-20
+
+
+
+This release contains a bug fix.
+
+For full release details, refer to [Releases](https://github.com/n8n-io/n8n/releases) on GitHub.
+
+## n8n@1.108.1
+
+View the [commits](https://github.com/n8n-io/n8n/compare/n8n@1.108.0...n8n@1.108.1) for this version.<br />
+**Release date:** 2025-08-20
+
+
+
+
+
+This release contains a bug fix.
+
+For full release details, refer to [Releases](https://github.com/n8n-io/n8n/releases) on GitHub.
+
+
+
+## n8n@1.107.3
+
+View the [commits](https://github.com/n8n-io/n8n/compare/n8n@1.107.2...n8n@1.107.3) for this version.<br />
+**Release date:** 2025-08-18
+
+This release contains bug fixes.
+
+For full release details, refer to [Releases](https://github.com/n8n-io/n8n/releases) on GitHub.
+
+## n8n@1.108.0
+
+View the [commits](https://github.com/n8n-io/n8n/compare/n8n@1.107.0...n8n@1.108.0) for this version.<br />
+**Release date:** 2025-08-18
+
+This release contains a new CLI tool, editor improvements, node updates, performance improvements, and bug fixes.
+### Workflow Diff
+
+For teams working across different environments, deployments often involve multiple people making changes at different times. Without a clear view of those changes, it’s easy to miss something important.
+
+[Workflow Diff](/source-control-environments/using/compare-changes.md) gives you an easy and visual way to review workflow changes before you deploy them between environments.
+
+With it, you can:
+
+- Quickly see what’s been added, changed, or deleted, with clear colour highlights.
+- Easily see important settings changes on a workflow.
+- Check changes inside each node, and spot connector updates, with a side-by-side view of its settings.
+- Get a quick count of all changes to understand the size of a deployment.
+
+<br> 
+<figure markdown="span">
+    ![Workflow diffs](/_images/release-notes/Diffs2.png)
+    <figcaption></figcaption>
+</figure>
+<br> 
+<figure markdown="span">
+    ![](/_images/release-notes/Diffs1.png)
+    <figcaption>Workflow Diff</figcaption>
+</figure>
+<br>
+Workflow Diff eases the review and approval of changes before deployment, enabling teams to collaborate on workflows without breaking existing automations or disrupting production. It’s one step further in integrating DevOps best practices in n8n. 
+
+Now available for Enterprise customers using Environments.
+
+### Contributors
+
+[ManuLasker](https://github.com/ManuLasker)  
+[EternalDeiwos](https://github.com/EternalDeiwos)  
+[jreyesr](https://github.com/jreyesr)  
+
+For full release details, refer to [Releases](https://github.com/n8n-io/n8n/releases) on GitHub.
+
+
+
 ## n8n@1.107.2
 
 View the [commits](https://github.com/n8n-io/n8n/compare/n8n@1.107.1...n8n@1.107.2) for this version.<br />
 **Release date:** 2025-08-15
+
+
 
 This release contains bug fixes.
 
@@ -51,9 +281,7 @@ For full release details, refer to [Releases](https://github.com/n8n-io/n8n/rele
 View the [commits](https://github.com/n8n-io/n8n/compare/n8n@1.107.0...n8n@1.107.1) for this version.<br />
 **Release date:** 2025-08-14
 
-/// note | Next version
-This is the `next` version. n8n recommends using the `latest` version. The `next` version may be unstable. To report issues, use the [forum](https://community.n8n.io/c/questions/12).
-///
+
 
 This release contains bug fixes.
 
@@ -66,9 +294,9 @@ For full release details, refer to [Releases](https://github.com/n8n-io/n8n/rele
 View the [commits](https://github.com/n8n-io/n8n/compare/n8n@1.106.2...n8n@1.106.3) for this version.<br />
 **Release date:** 2025-08-11
 
-/// note | Latest version
-This is the `latest` version. n8n recommends using the `latest` version. The `next` version may be unstable. To report issues, use the [forum](https://community.n8n.io/c/questions/12).
-///
+
+
+
 
 
 
