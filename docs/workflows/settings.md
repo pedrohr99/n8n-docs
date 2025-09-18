@@ -1,5 +1,4 @@
 ---
-#https://www.notion.so/n8n/Frontmatter-432c2b8dff1f43d4b1c8d20075510fe4
 description: Manage settings for an individual workflow.
 contentType: howto
 ---
@@ -13,7 +12,7 @@ You can customize workflow behavior for individual workflows using workflow sett
 To open the settings:
 
 1. Open your workflow.
-1. Select the **three dots icon** <span class="inline-image">![three dots icon](/_images/common-icons/three-dots-horizontal.png){.off-glb}</span> in the upper-right corner.
+1. Select the **three dots icon** <span class="n8n-inline-image">![three dots icon](/_images/common-icons/three-dots-horizontal.png){.off-glb}</span> in the upper-right corner.
 3. Select **Settings**. n8n opens the **Workflow settings** modal.
 
 ## Available settings
