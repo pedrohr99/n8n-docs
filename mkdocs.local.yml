@@ -1,0 +1,152 @@
+site_name: n8n Docs
+site_url: https://docs.n8n.io/
+site_description: Documentation for n8n, a workflow automation platform.
+# Must be the docs repo for the edit page buttons to work
+repo_url: https://github.com/n8n-io/n8n-docs
+edit_uri: edit/main/docs/
+validation:
+  nav:
+    omitted_files: warn
+    not_found: warn
+    absolute_links: warn
+  links:
+    not_found: warn
+    anchors: warn
+    absolute_links: relative_to_docs
+    unrecognized_links: warn
+theme:
+  name: material
+  custom_dir: _overrides
+  favicon: _images/favicon.ico
+  font: false
+  language: custom
+  logo: _images/n8n-docs-icon.svg
+  palette:
+    scheme: light
+  features:
+    - announce.dismiss
+    - content.action.edit
+    - content.code.annotate
+    - content.tabs.link
+    - content.code.copy
+    - content.tooltips
+    - navigation.footer
+    - navigation.indexes
+    - navigation.path
+    - navigation.sections
+    - navigation.tabs
+    - navigation.top
+    - navigation.tracking
+extra:
+  analytics:
+    provider: google
+    property: G-0SC4FF2FH9
+  status:
+    beta: This feature is in beta
+  n8n_extra:
+    feedback:
+      question: This page was
+      positive_button_text: Helpful
+      negative_button_text: Not helpful
+      comment_input_placeholder: This page needs...
+      comment_input_hint: We read all feedback personally
+      thankyou_message: Thanks for your feedback!
+extra_css:
+  - _extra/css/extra.css
+  - _extra/css/macro-styles.css
+  - _extra/css/templates-widget.css
+  - _extra/css/workflow-demo.css
+  - _extra/css/feedback.css
+extra_javascript:
+  - _extra/javascript/feedback.js
+  - _extra/javascript/init_kapa_widget.js
+watch:
+  - _snippets
+  - _overrides
+markdown_extensions:
+  - abbr
+  - attr_list
+  # - material.extensions.preview:
+  #     configurations:
+  #       - sources:
+  #           include:
+  #             - release-notes.md
+  #       - targets:
+  #           include:
+  #             - glossary.md
+  - md_in_html
+  - meta
+  - pymdownx.blocks.admonition:
+      types:
+        - note
+        - info
+        - tip
+        - question
+        - warning
+        - danger
+        - details
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.snippets:
+      auto_append:
+        - _glossary/main.md
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+      preserve_tabs: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tabbed:
+      alternate_style: true
+  - sane_lists
+  - tables
+  - toc:
+      permalink: '#'
+plugins:
+  - search
+  - exclude:
+      glob:
+  - glightbox:
+      touchNavigation: false
+      loop: false
+      effect: zoom
+      slide_effect: none
+      width: auto
+      height: auto
+      zoomable: false
+      draggable: false
+      auto_caption: false
+      caption_position: bottom
+  - macros:
+      include_yaml:
+        - _yaml/data-functions.yml
+      j2_block_start_string: '[[%'
+      j2_block_end_string: '%]]'
+      j2_variable_start_string: '[['
+      j2_variable_end_string: ']]'
+  - tags:
+      enabled: true
+  - privacy:
+      assets: false
+  - llmstxt:
+      markdown_description: |
+        Documentation for n8n, a workflow automation platform. This file helps LLMs understand and use the documentation more effectively.
+      full_output: llms-full.txt
+      sections:
+        All documentation:
+          - '*.md'
+  # PDF generation plugin (disabled by default in dev; enable by setting ENABLE_PDF_EXPORT=1)
+  - with-pdf:
+      output_path: pdf/n8n-docs.pdf
+      enabled_if_env: ENABLE_PDF_EXPORT
+      cover_title: n8n Docs
+      cover_logo: _images/n8n-docs-icon.svg
+INHERIT: ./nav.yml

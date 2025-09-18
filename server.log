@@ -1,0 +1,19 @@
+Activating virtualenv: /Users/pedro/VSCodeProjects/GitHub/pedrohr99/n8n-docs-fork/.venv
+Serving docs using /Users/pedro/VSCodeProjects/GitHub/pedrohr99/n8n-docs-fork/mkdocs.local.yml
+INFO    -  Building documentation...
+INFO    -  [macros] - Loading yaml file: /Users/pedro/VSCodeProjects/GitHub/pedrohr99/n8n-docs-fork/_yaml/data-functions.yml
+INFO    -  [macros] - Found local Python module 'main' in: /Users/pedro/VSCodeProjects/GitHub/pedrohr99/n8n-docs-fork
+INFO    -  [macros] - Found external Python module 'main' in: /Users/pedro/VSCodeProjects/GitHub/pedrohr99/n8n-docs-fork
+INFO    -  [macros] - Functions found: define_env,on_pre_page_macros,on_post_page_macros,on_post_build
+INFO    -  [macros] - Found j2 variable 'block_start_string': '[[%'
+INFO    -  [macros] - Found j2 variable 'block_end_string': '%]]'
+INFO    -  [macros] - Found j2 variable 'variable_start_string': '[['
+INFO    -  [macros] - Found j2 variable 'variable_end_string': ']]'
+INFO    -  [macros] - Config variables: ['extra', 'config', 'df_types', 'df_string', 'df_object', 'df_number', 'df_date', 'df_array', 'df_boolean', 'environment', 'plugin', 'git', 'analytics', 'status', 'n8n_extra', 'macros', 'filters', 'filters_builtin']
+INFO    -  [macros] - Config macros: ['context', 'macros_info', 'now', 'fix_url', 'templatesWidget', 'workflowDemo']
+INFO    -  [macros] - Config filters: ['pretty', 'relative_url']
+INFO    -  Cleaning site directory
+INFO    -  Documentation built in 386.67 seconds
+INFO    -  [03:55:34] Watching paths for changes: 'docs', 'mkdocs.local.yml', '_snippets', '_overrides'
+INFO    -  [03:55:34] Serving on http://127.0.0.1:8001/
+./scripts/serve.sh: line 26: 40063 Terminated: 15          "$VENV/bin/mkdocs" serve --config-file "$CONFIG" --strict --dev-addr "$DEV_ADDR"
